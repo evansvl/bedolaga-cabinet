@@ -9,7 +9,8 @@ export type { WSMessage } from './WebSocketContext';
 const isDev = import.meta.env.DEV;
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
-  const { accessToken, isAuthenticated } = useAuthStore();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -114,6 +115,12 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         if (pingIntervalRef.current) {
           clearInterval(pingIntervalRef.current);
           pingIntervalRef.current = null;
+        }
+
+        // Don't reconnect on auth failures (1008 = Policy Violation / invalid token)
+        if (event.code === 1008) {
+          if (isDev) console.log('[WS] Auth rejected, not reconnecting');
+          return;
         }
 
         // Attempt to reconnect if not closed intentionally

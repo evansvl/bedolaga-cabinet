@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/auth';
 import { useHaptic } from '@/platform';
 import { useTelegramSDK } from '@/hooks/useTelegramSDK';
+import { useHeaderHeight } from '@/hooks/useHeaderHeight';
 import { useTheme } from '@/hooks/useTheme';
 import { useBranding } from '@/hooks/useBranding';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
@@ -13,16 +14,17 @@ import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { themeColorsApi } from '@/api/themeColors';
 import { isLogoPreloaded } from '@/api/branding';
 import { cn } from '@/lib/utils';
-import { UI } from '@/config/constants';
 
 import WebSocketNotifications from '@/components/WebSocketNotifications';
+import CampaignBonusNotifier from '@/components/CampaignBonusNotifier';
 import SuccessNotificationModal from '@/components/SuccessNotificationModal';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import TicketNotificationBell from '@/components/TicketNotificationBell';
+import { SubscriptionIcon, GiftIcon } from '@/components/icons';
 
 import { MobileBottomNav } from './MobileBottomNav';
 import { AppHeader } from './AppHeader';
-import { Aurora } from './Aurora';
+import { BackgroundRenderer } from '@/components/backgrounds/BackgroundRenderer';
 
 // Desktop nav icons
 const HomeIcon = ({ className }: { className?: string }) => (
@@ -192,15 +194,17 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const location = useLocation();
-  const { isAdmin, logout } = useAuthStore();
+  const isAdmin = useAuthStore((state) => state.isAdmin);
+  const logout = useAuthStore((state) => state.logout);
   const { isFullscreen, safeAreaInset, contentSafeAreaInset, platform, isMobile } =
     useTelegramSDK();
+  const { mobile: headerHeight } = useHeaderHeight();
   const haptic = useHaptic();
   const { toggleTheme, isDark } = useTheme();
 
   // Extracted hooks
   const { appName, logoLetter, hasCustomLogo, logoUrl } = useBranding();
-  const { referralEnabled, wheelEnabled, hasContests, hasPolls } = useFeatureFlags();
+  const { referralEnabled, wheelEnabled, hasContests, hasPolls, giftEnabled } = useFeatureFlags();
   useScrollRestoration();
 
   // Theme toggle visibility
@@ -250,6 +254,7 @@ export function AppShell({ children }: AppShellProps) {
   // Desktop navigation items
   const desktopNavItems = [
     { path: '/', label: t('nav.dashboard'), icon: HomeIcon },
+    { path: '/subscription', label: t('nav.subscription'), icon: SubscriptionIcon },
     { path: '/balance', label: t('nav.balance'), icon: CreditCardIcon },
     { path: '/support', label: t('nav.support'), icon: ChatIcon },
     { path: '/info', label: t('nav.info'), icon: InfoIcon },
@@ -265,26 +270,20 @@ export function AppShell({ children }: AppShellProps) {
     haptic.impact('light');
   };
 
-  // Calculate header height based on fullscreen mode (only on mobile Telegram)
-  // On iOS: contentSafeAreaInset.top includes status bar + dynamic island + Telegram header
-  // On Android: safeAreaInset.top only includes status bar, need to add Telegram header height (~48px)
-  const telegramHeaderHeight =
-    platform === 'android' ? UI.TELEGRAM_HEADER_ANDROID_PX : UI.TELEGRAM_HEADER_IOS_PX;
-  const headerHeight = isMobileFullscreen
-    ? 64 + Math.max(safeAreaInset.top, contentSafeAreaInset.top) + telegramHeaderHeight
-    : 64;
+  // headerHeight comes from useHeaderHeight() — accounts for TG safe area in fullscreen
 
   return (
     <div className="min-h-screen">
-      {/* Animated background */}
-      <Aurora />
+      {/* Animated background renders via portal on document.body at z-index: -1 */}
+      <BackgroundRenderer />
 
       {/* Global components */}
       <WebSocketNotifications />
+      <CampaignBonusNotifier />
       <SuccessNotificationModal />
 
       {/* Desktop Header */}
-      <header className="fixed left-0 right-0 top-0 z-50 hidden border-b border-dark-800/50 bg-dark-950/80 backdrop-blur-xl lg:block">
+      <header className="fixed left-0 right-0 top-0 z-50 hidden border-b border-dark-800/50 bg-dark-950/95 lg:block">
         <div className="mx-auto grid h-14 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-6">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5" onClick={handleNavClick}>
@@ -312,21 +311,23 @@ export function AppShell({ children }: AppShellProps) {
           </Link>
 
           {/* Center Navigation */}
-          <nav className="flex items-center justify-center gap-1">
+          <nav className="flex min-w-0 items-center gap-1">
             {desktopNavItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={handleNavClick}
                 className={cn(
-                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  'group flex items-center rounded-xl px-2.5 py-2 transition-all duration-200',
                   isActive(item.path)
                     ? 'bg-dark-800 text-dark-50'
                     : 'text-dark-400 hover:bg-dark-800/50 hover:text-dark-200',
                 )}
               >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                <item.icon className="h-[18px] w-[18px] shrink-0" />
+                <span className="max-w-0 overflow-hidden whitespace-nowrap text-xs font-medium opacity-0 transition-all duration-200 group-hover:ml-2 group-hover:max-w-40 group-hover:opacity-100">
+                  {item.label}
+                </span>
               </Link>
             ))}
             {referralEnabled && (
@@ -334,32 +335,52 @@ export function AppShell({ children }: AppShellProps) {
                 to="/referral"
                 onClick={handleNavClick}
                 className={cn(
-                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  'group flex items-center rounded-xl px-2.5 py-2 transition-all duration-200',
                   isActive('/referral')
                     ? 'bg-dark-800 text-dark-50'
                     : 'text-dark-400 hover:bg-dark-800/50 hover:text-dark-200',
                 )}
               >
-                <UsersIcon className="h-4 w-4" />
-                <span>{t('nav.referral')}</span>
+                <UsersIcon className="h-[18px] w-[18px] shrink-0" />
+                <span className="max-w-0 overflow-hidden whitespace-nowrap text-xs font-medium opacity-0 transition-all duration-200 group-hover:ml-2 group-hover:max-w-40 group-hover:opacity-100">
+                  {t('nav.referral')}
+                </span>
+              </Link>
+            )}
+            {giftEnabled && (
+              <Link
+                to="/gift"
+                onClick={handleNavClick}
+                className={cn(
+                  'group flex items-center rounded-xl px-2.5 py-2 transition-all duration-200',
+                  isActive('/gift')
+                    ? 'bg-dark-800 text-dark-50'
+                    : 'text-dark-400 hover:bg-dark-800/50 hover:text-dark-200',
+                )}
+              >
+                <GiftIcon className="h-[18px] w-[18px] shrink-0" />
+                <span className="max-w-0 overflow-hidden whitespace-nowrap text-xs font-medium opacity-0 transition-all duration-200 group-hover:ml-2 group-hover:max-w-40 group-hover:opacity-100">
+                  {t('nav.gift')}
+                </span>
               </Link>
             )}
             {isAdmin && (
               <>
-                {/* Separator before admin */}
-                <div className="mx-2 h-5 w-px bg-dark-700" />
+                <div className="mx-1 h-5 w-px shrink-0 bg-dark-700" />
                 <Link
                   to="/admin"
                   onClick={handleNavClick}
                   className={cn(
-                    'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    'group flex items-center rounded-xl px-2.5 py-2 transition-all duration-200',
                     location.pathname.startsWith('/admin')
                       ? 'bg-warning-500/10 text-warning-400'
                       : 'text-warning-500/70 hover:bg-warning-500/10 hover:text-warning-400',
                   )}
                 >
-                  <ShieldIcon className="h-4 w-4" />
-                  <span>{t('admin.nav.title')}</span>
+                  <ShieldIcon className="h-[18px] w-[18px] shrink-0" />
+                  <span className="max-w-0 overflow-hidden whitespace-nowrap text-xs font-medium opacity-0 transition-all duration-200 group-hover:ml-2 group-hover:max-w-40 group-hover:opacity-100">
+                    {t('admin.nav.title')}
+                  </span>
                 </Link>
               </>
             )}
@@ -373,7 +394,7 @@ export function AppShell({ children }: AppShellProps) {
                 toggleTheme();
               }}
               className={cn(
-                'rounded-xl border border-dark-700/50 bg-dark-800/50 p-2 text-dark-400 transition-all duration-200 hover:bg-dark-700 hover:text-accent-400',
+                'rounded-xl border border-dark-700/50 bg-dark-800/50 p-2 text-dark-400 transition-colors duration-200 hover:bg-dark-700 hover:text-accent-400',
                 !canToggleTheme && 'pointer-events-none invisible',
               )}
               title={isDark ? t('theme.light') || 'Light mode' : t('theme.dark') || 'Dark mode'}
@@ -387,7 +408,7 @@ export function AppShell({ children }: AppShellProps) {
                 haptic.impact('light');
                 logout();
               }}
-              className="rounded-xl border border-dark-700/50 bg-dark-800/50 p-2 text-dark-400 transition-all duration-200 hover:bg-dark-700 hover:text-accent-400"
+              className="rounded-xl border border-dark-700/50 bg-dark-800/50 p-2 text-dark-400 transition-colors duration-200 hover:bg-dark-700 hover:text-accent-400"
               title={t('nav.logout')}
             >
               <LogoutIcon className="h-5 w-5" />
@@ -410,6 +431,7 @@ export function AppShell({ children }: AppShellProps) {
         referralEnabled={referralEnabled}
         hasContests={hasContests}
         hasPolls={hasPolls}
+        giftEnabled={giftEnabled}
       />
 
       {/* Desktop spacer */}

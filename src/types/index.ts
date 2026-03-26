@@ -21,6 +21,15 @@ export interface OAuthProvider {
   display_name: string;
 }
 
+// Campaign bonus info (returned during auth)
+export interface CampaignBonusInfo {
+  campaign_name: string;
+  bonus_type: 'balance' | 'subscription' | 'tariff' | 'none';
+  balance_kopeks: number;
+  subscription_days: number | null;
+  tariff_name: string | null;
+}
+
 // Auth types
 export interface AuthResponse {
   access_token: string;
@@ -28,6 +37,7 @@ export interface AuthResponse {
   token_type: string;
   expires_in: number;
   user: User;
+  campaign_bonus?: CampaignBonusInfo | null;
 }
 
 export interface TokenResponse {
@@ -81,6 +91,7 @@ export interface Subscription {
   hide_subscription_link: boolean;
   is_active: boolean;
   is_expired: boolean;
+  is_limited: boolean;
   traffic_purchases?: TrafficPurchase[];
   // Daily tariff fields
   is_daily?: boolean;
@@ -90,6 +101,7 @@ export interface Subscription {
   // Tariff info
   tariff_id?: number;
   tariff_name?: string;
+  traffic_reset_mode?: string;
 }
 
 // Response wrapper for subscription status endpoint
@@ -306,6 +318,8 @@ export interface Tariff {
   daily_discount_percent?: number;
   original_price_per_day_kopeks?: number;
   custom_days_discount_percent?: number;
+  // Traffic reset
+  traffic_reset_mode?: string;
 }
 
 export interface TariffsPurchaseOptions {
@@ -405,11 +419,15 @@ export interface PaymentMethod {
 export interface ReferralInfo {
   referral_code: string;
   referral_link: string;
+  bot_referral_link?: string;
   total_referrals: number;
   active_referrals: number;
   total_earnings_kopeks: number;
   total_earnings_rubles: number;
   commission_percent: number;
+  available_balance_kopeks: number;
+  available_balance_rubles: number;
+  withdrawn_kopeks: number;
 }
 
 export interface ReferralTerms {
@@ -421,6 +439,8 @@ export interface ReferralTerms {
   first_topup_bonus_rubles: number;
   inviter_bonus_kopeks: number;
   inviter_bonus_rubles: number;
+  max_commission_payments: number;
+  partner_section_visible?: boolean;
 }
 
 // Ticket types
@@ -454,7 +474,7 @@ export interface TicketDetail extends Omit<Ticket, 'messages_count' | 'last_mess
 
 export interface SupportConfig {
   tickets_enabled: boolean;
-  support_type: 'tickets' | 'profile' | 'url';
+  support_type: 'tickets' | 'profile' | 'url' | 'both';
   support_url?: string | null;
   support_username?: string | null;
 }
@@ -547,6 +567,7 @@ export interface PendingPayment {
   user_id?: number;
   user_telegram_id?: number;
   user_username?: string | null;
+  user_email?: string | null;
 }
 
 export interface ManualCheckResponse {
@@ -556,6 +577,21 @@ export interface ManualCheckResponse {
   status_changed: boolean;
   old_status: string | null;
   new_status: string | null;
+}
+
+// Saved payment method (card) for recurrent payments
+export interface SavedCard {
+  id: number;
+  method_type: string;
+  card_last4: string | null;
+  card_type: string | null;
+  title: string | null;
+  created_at: string;
+}
+
+export interface SavedCardsResponse {
+  cards: SavedCard[];
+  recurrent_enabled: boolean;
 }
 
 // Ticket notifications types
@@ -618,4 +654,62 @@ export interface PaymentMethodConfig {
 export interface PromoGroupSimple {
   id: number;
   name: string;
+}
+
+// Account Linking
+export interface LinkedProvider {
+  provider: string;
+  linked: boolean;
+  identifier: string | null;
+}
+
+export interface LinkedProvidersResponse {
+  providers: LinkedProvider[];
+}
+
+export interface LinkCallbackResponse {
+  success: boolean;
+  message: string | null;
+  merge_required: boolean;
+  merge_token: string | null;
+}
+
+export interface ServerCompleteResponse extends LinkCallbackResponse {
+  provider: string;
+}
+
+// Account Merge
+export interface MergeSubscriptionPreview {
+  status: string;
+  is_trial: boolean;
+  end_date: string | null;
+  traffic_limit_gb: number;
+  traffic_used_gb: number;
+  device_limit: number;
+  tariff_name: string | null;
+  autopay_enabled: boolean;
+}
+
+export interface MergeAccountPreview {
+  id: number;
+  username: string | null;
+  first_name: string | null;
+  email: string | null;
+  auth_methods: string[];
+  balance_kopeks: number;
+  subscription: MergeSubscriptionPreview | null;
+  created_at: string | null;
+}
+
+export interface MergePreviewResponse {
+  primary: MergeAccountPreview;
+  secondary: MergeAccountPreview;
+  expires_in_seconds: number;
+}
+
+export interface MergeResponse {
+  success: boolean;
+  access_token: string | null;
+  refresh_token: string | null;
+  user: User | null;
 }

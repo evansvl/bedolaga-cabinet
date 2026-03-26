@@ -6,6 +6,7 @@ import type {
   PaginatedResponse,
   PendingPayment,
   ManualCheckResponse,
+  SavedCardsResponse,
 } from '../types';
 
 export const balanceApi = {
@@ -109,7 +110,15 @@ export const balanceApi = {
   // Get specific pending payment details
   getPendingPayment: async (method: string, paymentId: number): Promise<PendingPayment> => {
     const response = await apiClient.get<PendingPayment>(
-      `/cabinet/balance/pending-payments/${method}/${paymentId}`,
+      `/cabinet/balance/pending-payments/${encodeURIComponent(method)}/${encodeURIComponent(paymentId)}`,
+    );
+    return response.data;
+  },
+
+  // Get latest pending payment by method (fallback when sessionStorage unavailable)
+  getLatestPayment: async (method: string): Promise<PendingPayment> => {
+    const response = await apiClient.get<PendingPayment>(
+      `/cabinet/balance/pending-payments/${encodeURIComponent(method)}/latest`,
     );
     return response.data;
   },
@@ -117,8 +126,19 @@ export const balanceApi = {
   // Manually check payment status
   checkPaymentStatus: async (method: string, paymentId: number): Promise<ManualCheckResponse> => {
     const response = await apiClient.post<ManualCheckResponse>(
-      `/cabinet/balance/pending-payments/${method}/${paymentId}/check`,
+      `/cabinet/balance/pending-payments/${encodeURIComponent(method)}/${encodeURIComponent(paymentId)}/check`,
     );
     return response.data;
+  },
+
+  // Get saved payment methods (cards) for recurrent payments
+  getSavedCards: async (): Promise<SavedCardsResponse> => {
+    const response = await apiClient.get<SavedCardsResponse>('/cabinet/balance/saved-cards');
+    return response.data;
+  },
+
+  // Unlink (delete) a saved payment method
+  deleteSavedCard: async (id: number): Promise<void> => {
+    await apiClient.delete(`/cabinet/balance/saved-cards/${id}`);
   },
 };

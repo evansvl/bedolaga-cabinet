@@ -23,8 +23,6 @@ import {
   RemnawaveIcon,
 } from '../components/icons';
 
-// ============ Icons ============
-
 const BackIcon = () => (
   <svg
     className="h-5 w-5 text-dark-400"
@@ -37,13 +35,11 @@ const BackIcon = () => (
   </svg>
 );
 
-// ============ Helpers ============
-
 const formatBytes = (bytes: number): string => {
   if (bytes === 0) return '0 B';
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
@@ -99,8 +95,6 @@ const getCountryFlag = (code: string | null | undefined): string => {
   };
   return codeMap[code.toUpperCase()] || code;
 };
-
-// ============ Sub-Components ============
 
 interface StatCardProps {
   label: string;
@@ -333,8 +327,6 @@ function SyncCard({ title, description, onAction, isLoading, lastResult }: SyncC
   );
 }
 
-// ============ Tab Components ============
-
 interface OverviewTabProps {
   stats: SystemStatsResponse | undefined;
   isLoading: boolean;
@@ -363,9 +355,15 @@ function OverviewTab({ stats, isLoading, onRefresh }: OverviewTabProps) {
     );
   }
 
+  // Use (total - available) instead of raw "used" to exclude disk cache/buffers
+  // This matches what htop/free show as actual application memory usage
+  const memoryActualUsed =
+    stats.server_info.memory_available > 0
+      ? stats.server_info.memory_total - stats.server_info.memory_available
+      : stats.server_info.memory_used;
   const memoryUsedPercent =
     stats.server_info.memory_total > 0
-      ? Math.round((stats.server_info.memory_used / stats.server_info.memory_total) * 100)
+      ? Math.round((memoryActualUsed / stats.server_info.memory_total) * 100)
       : 0;
 
   return (
@@ -446,7 +444,7 @@ function OverviewTab({ stats, isLoading, onRefresh }: OverviewTabProps) {
           <StatCard
             label={t('admin.remnawave.overview.memory', 'Memory')}
             value={`${memoryUsedPercent}%`}
-            subValue={`${formatBytes(stats.server_info.memory_used)} / ${formatBytes(stats.server_info.memory_total)}`}
+            subValue={`${formatBytes(memoryActualUsed)} / ${formatBytes(stats.server_info.memory_total)}`}
             icon={<span className="text-lg">💾</span>}
             color={memoryUsedPercent > 80 ? 'red' : memoryUsedPercent > 60 ? 'orange' : 'green'}
           />
@@ -866,8 +864,6 @@ function SyncTab({
     </div>
   );
 }
-
-// ============ Main Component ============
 
 type TabType = 'overview' | 'nodes' | 'squads' | 'sync';
 

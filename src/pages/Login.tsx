@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/auth';
+import { useShallow } from 'zustand/shallow';
 import { authApi } from '../api/auth';
 import { isValidEmail } from '../utils/validation';
 import {
@@ -14,28 +15,37 @@ import {
   type BrandingInfo,
   type EmailAuthEnabled,
 } from '../api/branding';
-import { getAndClearReturnUrl } from '../utils/token';
+import { getAndClearReturnUrl, tokenStorage } from '../utils/token';
 import { isInTelegramWebApp, getTelegramInitData, useTelegramSDK } from '../hooks/useTelegramSDK';
+import { closeMiniApp } from '@telegram-apps/sdk-react';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import TelegramLoginButton from '../components/TelegramLoginButton';
 import OAuthProviderIcon from '../components/OAuthProviderIcon';
-import { saveOAuthState } from './OAuthCallback';
+import { saveOAuthState } from '../utils/oauth';
+import { getPendingReferralCode } from '../utils/referral';
 
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const {
     isAuthenticated,
     isLoading: isAuthInitializing,
     loginWithTelegram,
     loginWithEmail,
     registerWithEmail,
-  } = useAuthStore();
+  } = useAuthStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      isLoading: state.isLoading,
+      loginWithTelegram: state.loginWithTelegram,
+      loginWithEmail: state.loginWithEmail,
+      registerWithEmail: state.registerWithEmail,
+    })),
+  );
 
-  // Extract referral code from URL
-  const referralCode = searchParams.get('ref') || '';
+  // Get referral code from localStorage (captured from ?ref= param at module level in auth store)
+  const referralCode = getPendingReferralCode() || '';
 
   const [authMode, setAuthMode] = useState<'login' | 'register'>(() =>
     referralCode ? 'register' : 'login',
@@ -118,12 +128,13 @@ export default function Login() {
       const { authorize_url, state } = await authApi.getOAuthAuthorizeUrl(provider);
 
       // Validate redirect URL — only allow HTTPS to prevent open redirect
+      let parsed: URL;
       try {
-        const parsed = new URL(authorize_url);
-        if (parsed.protocol !== 'https:') {
-          throw new Error('Invalid OAuth redirect URL');
-        }
+        parsed = new URL(authorize_url);
       } catch {
+        throw new Error('Invalid OAuth redirect URL');
+      }
+      if (parsed.protocol !== 'https:') {
         throw new Error('Invalid OAuth redirect URL');
       }
 
@@ -134,15 +145,6 @@ export default function Login() {
       setOauthLoading(null);
     }
   };
-
-  const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
-
-  // If email auth is disabled but user came with ref param, redirect to bot
-  useEffect(() => {
-    if (referralCode && emailAuthConfig?.enabled === false && botUsername) {
-      window.location.href = `https://t.me/${botUsername}?start=${encodeURIComponent(referralCode)}`;
-    }
-  }, [referralCode, emailAuthConfig, botUsername]);
 
   const appName = branding ? branding.name : import.meta.env.VITE_APP_NAME || 'VPN';
   const appLogo = branding?.logo_letter || import.meta.env.VITE_APP_LOGO || 'V';
@@ -202,30 +204,20 @@ export default function Login() {
     tryTelegramAuth();
   }, [isAuthInitializing, loginWithTelegram, navigate, t, getReturnUrl]);
 
-  // Manual retry for Telegram Mini App auth
-  const handleRetryTelegramAuth = async () => {
-    const initData = getTelegramInitData();
-    if (!initData) {
-      setError(t('auth.telegramRequired'));
-      return;
-    }
+  const handleRetryTelegramAuth = () => {
+    // Clear ALL cached auth state to prevent stale token/initData loops
+    tokenStorage.clearTokens();
+    sessionStorage.removeItem('tapps/launchParams');
+    sessionStorage.removeItem('telegram_init_data');
+    localStorage.removeItem('cabinet-auth');
+    localStorage.removeItem('tg_user_id');
 
-    setError('');
-    setIsLoading(true);
     try {
-      await loginWithTelegram(initData);
-      navigate(getReturnUrl(), { replace: true });
-    } catch (err) {
-      const error = err as { response?: { status?: number; data?: { detail?: string } } };
-      const status = error.response?.status;
-      const detail = error.response?.data?.detail;
-      if (import.meta.env.DEV) console.warn('Telegram auth retry failed:', status, detail);
-      setError(
-        detail ||
-          t('auth.telegramRetryFailed', 'Authorization failed. Close the app and try again.'),
-      );
-    } finally {
-      setIsLoading(false);
+      // Close miniapp — Telegram will provide fresh initData on reopen
+      closeMiniApp();
+    } catch {
+      // If closeMiniApp fails, force a clean page reload
+      window.location.reload();
     }
   };
 
@@ -474,7 +466,7 @@ export default function Login() {
                   </p>
                 </div>
               ) : (
-                <TelegramLoginButton botUsername={botUsername} />
+                <TelegramLoginButton referralCode={referralCode || undefined} />
               )}
             </div>
 

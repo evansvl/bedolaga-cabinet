@@ -13,6 +13,7 @@ import {
   type UserNodeUsageResponse,
   type PanelSyncStatusResponse,
   type UpdateSubscriptionRequest,
+  type AdminUserGiftsResponse,
 } from '../api/adminUsers';
 import { adminApi, type AdminTicket, type AdminTicketDetail } from '../api/admin';
 import { promocodesApi, type PromoGroup } from '../api/promocodes';
@@ -20,6 +21,7 @@ import { promoOffersApi } from '../api/promoOffers';
 import { ticketsApi } from '../api/tickets';
 import { AdminBackButton } from '../components/admin';
 import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
+import { usePermissionStore } from '../store/permissions';
 
 // ============ Helpers ============
 
@@ -117,6 +119,7 @@ function StatusBadge({ status }: { status: string }) {
     deleted: 'bg-dark-600 text-dark-400 border-dark-500',
     trial: 'bg-accent-500/20 text-accent-400 border-accent-500/30',
     expired: 'bg-warning-500/20 text-warning-400 border-warning-500/30',
+    limited: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     disabled: 'bg-dark-600 text-dark-400 border-dark-500',
   };
 
@@ -124,6 +127,156 @@ function StatusBadge({ status }: { status: string }) {
     <span className={`rounded-full border px-2 py-0.5 text-xs ${styles[status] || styles.active}`}>
       {status}
     </span>
+  );
+}
+
+function GiftStatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
+  const styles: Record<string, string> = {
+    pending: 'bg-warning-500/20 text-warning-400 border-warning-500/30',
+    paid: 'bg-accent-500/20 text-accent-400 border-accent-500/30',
+    delivered: 'bg-success-500/20 text-success-400 border-success-500/30',
+    pending_activation: 'bg-accent-500/20 text-accent-400 border-accent-500/30',
+    failed: 'bg-error-500/20 text-error-400 border-error-500/30',
+    expired: 'bg-dark-600 text-dark-400 border-dark-500',
+  };
+  const fallback = 'bg-dark-600 text-dark-400 border-dark-500';
+
+  const label = t(`admin.users.detail.gifts.status.${status}`, { defaultValue: '' }) || status;
+
+  return (
+    <span
+      className={`rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${styles[status] || fallback}`}
+    >
+      {label}
+    </span>
+  );
+}
+
+function GiftCard({
+  gift,
+  direction,
+  locale,
+  onNavigateToUser,
+}: {
+  gift: import('../api/adminUsers').AdminUserGiftItem;
+  direction: 'sent' | 'received';
+  locale: string;
+  onNavigateToUser: (userId: number) => void;
+}) {
+  const { t } = useTranslation();
+  const { formatWithCurrency } = useCurrency();
+  const isSent = direction === 'sent';
+
+  const otherPartyLabel = isSent
+    ? t('admin.users.detail.gifts.recipient')
+    : t('admin.users.detail.gifts.sender');
+  const otherPartyName = isSent
+    ? gift.receiver_username
+      ? `@${gift.receiver_username}`
+      : gift.gift_recipient_value || t('admin.users.detail.gifts.codeOnly')
+    : gift.buyer_username
+      ? `@${gift.buyer_username}`
+      : gift.buyer_full_name || t('admin.users.detail.gifts.unknownUser');
+  const otherPartyId = isSent ? gift.receiver_user_id : gift.buyer_user_id;
+
+  const dateOpts: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  };
+
+  return (
+    <div className="rounded-xl border border-dark-700/50 bg-dark-800/50 p-4 transition-colors hover:bg-dark-800/70">
+      {/* Header */}
+      <div className="mb-3 flex items-start justify-between">
+        <div className="flex items-center gap-2">
+          <div
+            className={`flex h-8 w-8 items-center justify-center rounded-lg ${isSent ? 'bg-accent-500/15' : 'bg-success-500/15'}`}
+          >
+            <svg
+              className={`h-4 w-4 ${isSent ? 'text-accent-400' : 'text-success-400'}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+              />
+            </svg>
+          </div>
+          <div>
+            <div className="text-sm font-medium text-dark-100">{gift.tariff_name || '—'}</div>
+            <div className="text-xs text-dark-500">
+              {gift.period_days} {t('admin.users.detail.gifts.days')} · {gift.device_limit}{' '}
+              {t('admin.users.detail.gifts.devices')}
+            </div>
+          </div>
+        </div>
+        <GiftStatusBadge status={gift.status} />
+      </div>
+
+      {/* Details grid */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+        <div>
+          <span className="text-dark-500">{otherPartyLabel}:</span>{' '}
+          <span className="text-dark-300">{otherPartyName}</span>
+          {otherPartyId && (
+            <button
+              onClick={() => onNavigateToUser(otherPartyId)}
+              className="ml-1 text-accent-400 hover:text-accent-300"
+            >
+              #{otherPartyId}
+            </button>
+          )}
+        </div>
+        <div>
+          <span className="text-dark-500">{t('admin.users.detail.gifts.amount')}:</span>{' '}
+          <span className="text-dark-300">{formatWithCurrency(gift.amount_kopeks / 100)}</span>
+        </div>
+        <div>
+          <span className="text-dark-500">{t('admin.users.detail.gifts.paymentMethod')}:</span>{' '}
+          <span className="text-dark-300">{gift.payment_method || '—'}</span>
+        </div>
+        <div>
+          <span className="text-dark-500">{t('admin.users.detail.gifts.createdAt')}:</span>{' '}
+          <span className="text-dark-300">
+            {gift.created_at ? new Date(gift.created_at).toLocaleString(locale, dateOpts) : '—'}
+          </span>
+        </div>
+        {gift.paid_at && (
+          <div>
+            <span className="text-dark-500">{t('admin.users.detail.gifts.paidAt')}:</span>{' '}
+            <span className="text-dark-300">
+              {new Date(gift.paid_at).toLocaleString(locale, dateOpts)}
+            </span>
+          </div>
+        )}
+        {gift.delivered_at && (
+          <div>
+            <span className="text-dark-500">{t('admin.users.detail.gifts.deliveredAt')}:</span>{' '}
+            <span className="text-success-400">
+              {new Date(gift.delivered_at).toLocaleString(locale, dateOpts)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Gift message */}
+      {gift.gift_message && (
+        <div className="mt-3 rounded-lg bg-dark-900/50 p-2.5 text-xs italic text-dark-400">
+          &ldquo;{gift.gift_message}&rdquo;
+        </div>
+      )}
+
+      {/* Token */}
+      <div className="mt-2 font-mono text-[10px] text-dark-600">GIFT-{gift.token}</div>
+    </div>
   );
 }
 
@@ -135,6 +288,7 @@ export default function AdminUserDetail() {
   const navigate = useNavigate();
   const notify = useNotify();
   const { id } = useParams<{ id: string }>();
+  const hasPermission = usePermissionStore((s) => s.hasPermission);
 
   const localeMap: Record<string, string> = { ru: 'ru-RU', en: 'en-US', zh: 'zh-CN', fa: 'fa-IR' };
   const locale = localeMap[i18n.language] || 'ru-RU';
@@ -142,7 +296,7 @@ export default function AdminUserDetail() {
   const [user, setUser] = useState<UserDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    'info' | 'subscription' | 'balance' | 'sync' | 'tickets'
+    'info' | 'subscription' | 'balance' | 'sync' | 'tickets' | 'gifts'
   >('info');
   const [syncStatus, setSyncStatus] = useState<PanelSyncStatusResponse | null>(null);
   const [tariffs, setTariffs] = useState<UserAvailableTariff[]>([]);
@@ -205,6 +359,10 @@ export default function AdminUserDetail() {
   const [devicesTotal, setDevicesTotal] = useState(0);
   const [deviceLimit, setDeviceLimit] = useState(0);
   const [devicesLoading, setDevicesLoading] = useState(false);
+
+  // Gifts
+  const [giftsData, setGiftsData] = useState<AdminUserGiftsResponse | null>(null);
+  const [giftsLoading, setGiftsLoading] = useState(false);
 
   const userId = id ? parseInt(id, 10) : null;
 
@@ -275,7 +433,6 @@ export default function AdminUserDetail() {
       const data = await adminUsersApi.getReferrals(userId, 0, 50);
       setReferrals(data.users);
     } catch {
-      // ignore
     } finally {
       setReferralsLoading(false);
     }
@@ -288,7 +445,6 @@ export default function AdminUserDetail() {
       const data = await adminUsersApi.getPanelInfo(userId);
       setPanelInfo(data);
     } catch {
-      // ignore
     } finally {
       setPanelInfoLoading(false);
     }
@@ -299,9 +455,7 @@ export default function AdminUserDetail() {
     try {
       const data = await adminUsersApi.getNodeUsage(userId);
       setNodeUsage(data);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [userId]);
 
   const loadDevices = useCallback(async () => {
@@ -313,7 +467,6 @@ export default function AdminUserDetail() {
       setDevicesTotal(data.total);
       setDeviceLimit(data.device_limit);
     } catch {
-      // ignore
     } finally {
       setDevicesLoading(false);
     }
@@ -323,13 +476,23 @@ export default function AdminUserDetail() {
     await Promise.all([loadPanelInfo(), loadNodeUsage(), loadDevices()]);
   }, [loadPanelInfo, loadNodeUsage, loadDevices]);
 
+  const loadGifts = useCallback(async () => {
+    if (!userId) return;
+    try {
+      setGiftsLoading(true);
+      const data = await adminUsersApi.getUserGifts(userId);
+      setGiftsData(data);
+    } catch {
+    } finally {
+      setGiftsLoading(false);
+    }
+  }, [userId]);
+
   const loadPromoGroups = useCallback(async () => {
     try {
       const data = await promocodesApi.getPromoGroups({ limit: 100 });
       setPromoGroups(data.items);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, []);
 
   const handleTicketReply = async () => {
@@ -384,14 +547,15 @@ export default function AdminUserDetail() {
   useEffect(() => {
     if (activeTab === 'info') {
       loadReferrals();
-      loadPromoGroups();
+      if (hasPermission('users:promo_group')) loadPromoGroups();
     }
-    if (activeTab === 'sync') loadSyncStatus();
+    if (activeTab === 'sync' && hasPermission('users:sync')) loadSyncStatus();
     if (activeTab === 'subscription') {
       loadTariffs();
       loadSubscriptionData();
     }
     if (activeTab === 'tickets') loadTickets();
+    if (activeTab === 'gifts') loadGifts();
   }, [
     activeTab,
     loadSyncStatus,
@@ -400,6 +564,8 @@ export default function AdminUserDetail() {
     loadReferrals,
     loadSubscriptionData,
     loadPromoGroups,
+    loadGifts,
+    hasPermission,
   ]);
 
   const handleUpdateBalance = async (isAdd: boolean) => {
@@ -427,12 +593,16 @@ export default function AdminUserDetail() {
 
   const handleUpdateSubscription = async (overrideAction?: string) => {
     if (!userId) return;
+    const action = overrideAction || subAction;
+    if ((action === 'extend' || action === 'shorten') && toNumber(subDays, 0) <= 0) {
+      notify.error(t('admin.users.detail.subscription.invalidDays'));
+      return;
+    }
     setActionLoading(true);
     try {
-      const action = overrideAction || subAction;
       const data: UpdateSubscriptionRequest = {
         action: action as UpdateSubscriptionRequest['action'],
-        ...(action === 'extend' ? { days: toNumber(subDays, 30) } : {}),
+        ...(action === 'extend' || action === 'shorten' ? { days: toNumber(subDays, 30) } : {}),
         ...(action === 'change_tariff' && selectedTariffId ? { tariff_id: selectedTariffId } : {}),
         ...(action === 'create'
           ? {
@@ -766,19 +936,17 @@ export default function AdminUserDetail() {
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'];
+    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       notify.success(t('admin.users.detail.copied'));
-    } catch {
-      // ignore
-    }
+    } catch {}
   };
 
   if (loading) {
@@ -831,23 +999,26 @@ export default function AdminUserDetail() {
         className="scrollbar-hide -mx-4 mb-6 flex gap-2 overflow-x-auto px-4 py-1"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        {(['info', 'subscription', 'balance', 'sync', 'tickets'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`shrink-0 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
-              activeTab === tab
-                ? 'bg-accent-500/15 text-accent-400 ring-1 ring-accent-500/30'
-                : 'bg-dark-800/50 text-dark-400 active:bg-dark-700'
-            }`}
-          >
-            {tab === 'info' && t('admin.users.detail.tabs.info')}
-            {tab === 'subscription' && t('admin.users.detail.tabs.subscription')}
-            {tab === 'balance' && t('admin.users.detail.tabs.balance')}
-            {tab === 'sync' && t('admin.users.detail.tabs.sync')}
-            {tab === 'tickets' && t('admin.users.detail.tabs.tickets')}
-          </button>
-        ))}
+        {(['info', 'subscription', 'balance', 'sync', 'tickets', 'gifts'] as const)
+          .filter((tab) => tab !== 'sync' || hasPermission('users:sync'))
+          .map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`shrink-0 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+                activeTab === tab
+                  ? 'bg-accent-500/15 text-accent-400 ring-1 ring-accent-500/30'
+                  : 'bg-dark-800/50 text-dark-400 active:bg-dark-700'
+              }`}
+            >
+              {tab === 'info' && t('admin.users.detail.tabs.info')}
+              {tab === 'subscription' && t('admin.users.detail.tabs.subscription')}
+              {tab === 'balance' && t('admin.users.detail.tabs.balance')}
+              {tab === 'sync' && t('admin.users.detail.tabs.sync')}
+              {tab === 'tickets' && t('admin.users.detail.tabs.tickets')}
+              {tab === 'gifts' && t('admin.users.detail.tabs.gifts')}
+            </button>
+          ))}
       </div>
 
       {/* Content */}
@@ -930,14 +1101,16 @@ export default function AdminUserDetail() {
             <div className="rounded-xl bg-dark-800/50 p-3">
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-xs text-dark-500">{t('admin.users.detail.promoGroup')}</span>
-                <button
-                  onClick={() => setEditingPromoGroup(!editingPromoGroup)}
-                  className="text-xs text-accent-400 transition-colors hover:text-accent-300"
-                >
-                  {editingPromoGroup
-                    ? t('common.cancel')
-                    : t('admin.users.detail.changePromoGroup')}
-                </button>
+                {hasPermission('users:promo_group') && (
+                  <button
+                    onClick={() => setEditingPromoGroup(!editingPromoGroup)}
+                    className="text-xs text-accent-400 transition-colors hover:text-accent-300"
+                  >
+                    {editingPromoGroup
+                      ? t('common.cancel')
+                      : t('admin.users.detail.changePromoGroup')}
+                  </button>
+                )}
               </div>
               {editingPromoGroup ? (
                 <div className="mt-2 space-y-2">
@@ -982,17 +1155,19 @@ export default function AdminUserDetail() {
                 <span className="text-sm font-medium text-dark-200">
                   {t('admin.users.detail.referral.title')}
                 </span>
-                <button
-                  onClick={() => {
-                    if (!editingReferralCommission) {
-                      setReferralCommissionValue(user.referral.commission_percent ?? '');
-                    }
-                    setEditingReferralCommission(!editingReferralCommission);
-                  }}
-                  className="text-xs text-accent-400 transition-colors hover:text-accent-300"
-                >
-                  {editingReferralCommission ? t('common.cancel') : t('common.edit')}
-                </button>
+                {hasPermission('users:referral') && (
+                  <button
+                    onClick={() => {
+                      if (!editingReferralCommission) {
+                        setReferralCommissionValue(user.referral.commission_percent ?? '');
+                      }
+                      setEditingReferralCommission(!editingReferralCommission);
+                    }}
+                    className="text-xs text-accent-400 transition-colors hover:text-accent-300"
+                  >
+                    {editingReferralCommission ? t('common.cancel') : t('common.edit')}
+                  </button>
+                )}
               </div>
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div>
@@ -1212,8 +1387,10 @@ export default function AdminUserDetail() {
                         {t('admin.users.detail.subscription.traffic')}
                       </div>
                       <div className="text-dark-100">
-                        {user.subscription.traffic_used_gb.toFixed(1)} /{' '}
-                        {user.subscription.traffic_limit_gb} {t('common.units.gb')}
+                        {panelInfo?.found
+                          ? (panelInfo.used_traffic_bytes / (1024 * 1024 * 1024)).toFixed(1)
+                          : user.subscription.traffic_used_gb.toFixed(1)}{' '}
+                        / {user.subscription.traffic_limit_gb} {t('common.units.gb')}
                       </div>
                     </div>
                     <div>
@@ -1351,72 +1528,81 @@ export default function AdminUserDetail() {
                   )}
 
                 {/* Actions */}
-                <div className="rounded-xl bg-dark-800/50 p-4">
-                  <div className="mb-3 font-medium text-dark-200">
-                    {t('admin.users.detail.subscription.actions')}
-                  </div>
-                  <div className="space-y-3">
-                    <select
-                      value={subAction}
-                      onChange={(e) => setSubAction(e.target.value)}
-                      className="input"
-                    >
-                      <option value="extend">{t('admin.users.detail.subscription.extend')}</option>
-                      <option value="change_tariff">
-                        {t('admin.users.detail.subscription.changeTariff')}
-                      </option>
-                      <option value="cancel">{t('admin.users.detail.subscription.cancel')}</option>
-                      <option value="activate">
-                        {t('admin.users.detail.subscription.activate')}
-                      </option>
-                    </select>
-
-                    {subAction === 'extend' && (
-                      <input
-                        type="number"
-                        value={subDays}
-                        onChange={createNumberInputHandler(setSubDays, 1)}
-                        placeholder={t('admin.users.detail.subscription.days')}
-                        className="input"
-                        min={1}
-                        max={3650}
-                      />
-                    )}
-
-                    {subAction === 'change_tariff' && (
+                {hasPermission('users:subscription') && (
+                  <div className="rounded-xl bg-dark-800/50 p-4">
+                    <div className="mb-3 font-medium text-dark-200">
+                      {t('admin.users.detail.subscription.actions')}
+                    </div>
+                    <div className="space-y-3">
                       <select
-                        value={selectedTariffId || ''}
-                        onChange={(e) =>
-                          setSelectedTariffId(e.target.value ? parseInt(e.target.value) : null)
-                        }
+                        value={subAction}
+                        onChange={(e) => setSubAction(e.target.value)}
                         className="input"
                       >
-                        <option value="">
-                          {t('admin.users.detail.subscription.selectTariff')}
+                        <option value="extend">
+                          {t('admin.users.detail.subscription.extend')}
                         </option>
-                        {tariffs.map((tariffItem) => (
-                          <option key={tariffItem.id} value={tariffItem.id}>
-                            {tariffItem.name}{' '}
-                            {!tariffItem.is_available &&
-                              t('admin.users.detail.subscription.unavailable')}
-                          </option>
-                        ))}
+                        <option value="shorten">
+                          {t('admin.users.detail.subscription.shorten')}
+                        </option>
+                        <option value="change_tariff">
+                          {t('admin.users.detail.subscription.changeTariff')}
+                        </option>
+                        <option value="cancel">
+                          {t('admin.users.detail.subscription.cancel')}
+                        </option>
+                        <option value="activate">
+                          {t('admin.users.detail.subscription.activate')}
+                        </option>
                       </select>
-                    )}
 
-                    <button
-                      onClick={() => handleUpdateSubscription()}
-                      disabled={actionLoading}
-                      className="btn-primary w-full"
-                    >
-                      {actionLoading
-                        ? t('admin.users.actions.applying')
-                        : t('admin.users.actions.apply')}
-                    </button>
+                      {(subAction === 'extend' || subAction === 'shorten') && (
+                        <input
+                          type="number"
+                          value={subDays}
+                          onChange={createNumberInputHandler(setSubDays, 1)}
+                          placeholder={t('admin.users.detail.subscription.days')}
+                          className="input"
+                          min={1}
+                          max={3650}
+                        />
+                      )}
+
+                      {subAction === 'change_tariff' && (
+                        <select
+                          value={selectedTariffId || ''}
+                          onChange={(e) =>
+                            setSelectedTariffId(e.target.value ? parseInt(e.target.value) : null)
+                          }
+                          className="input"
+                        >
+                          <option value="">
+                            {t('admin.users.detail.subscription.selectTariff')}
+                          </option>
+                          {tariffs.map((tariffItem) => (
+                            <option key={tariffItem.id} value={tariffItem.id}>
+                              {tariffItem.name}{' '}
+                              {!tariffItem.is_available &&
+                                t('admin.users.detail.subscription.unavailable')}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+
+                      <button
+                        onClick={() => handleUpdateSubscription()}
+                        disabled={actionLoading}
+                        className="btn-primary w-full"
+                      >
+                        {actionLoading
+                          ? t('admin.users.actions.applying')
+                          : t('admin.users.actions.apply')}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </>
-            ) : (
+            ) : hasPermission('users:subscription') ? (
               <div className="rounded-xl bg-dark-800/50 p-4">
                 <div className="mb-4 text-center text-dark-400">
                   {t('admin.users.detail.subscription.noActive')}
@@ -1454,6 +1640,12 @@ export default function AdminUserDetail() {
                       ? t('admin.users.detail.subscription.creating')
                       : t('admin.users.detail.subscription.create')}
                   </button>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl bg-dark-800/50 p-4">
+                <div className="text-center text-dark-400">
+                  {t('admin.users.detail.subscription.noActive')}
                 </div>
               </div>
             )}
@@ -1781,39 +1973,41 @@ export default function AdminUserDetail() {
             </div>
 
             {/* Add/subtract form */}
-            <div className="space-y-3 rounded-xl bg-dark-800/50 p-4">
-              <input
-                type="number"
-                value={balanceAmount}
-                onChange={createNumberInputHandler(setBalanceAmount)}
-                placeholder={t('admin.users.detail.balance.amountPlaceholder')}
-                className="input"
-              />
-              <input
-                type="text"
-                value={balanceDescription}
-                onChange={(e) => setBalanceDescription(e.target.value)}
-                placeholder={t('admin.users.detail.balance.descriptionPlaceholder')}
-                className="input"
-                maxLength={500}
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleUpdateBalance(true)}
-                  disabled={actionLoading || balanceAmount === ''}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-success-500 py-2 text-white transition-colors hover:bg-success-600 disabled:opacity-50"
-                >
-                  <PlusIcon /> {t('admin.users.detail.balance.add')}
-                </button>
-                <button
-                  onClick={() => handleUpdateBalance(false)}
-                  disabled={actionLoading || balanceAmount === ''}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-error-500 py-2 text-white transition-colors hover:bg-error-600 disabled:opacity-50"
-                >
-                  <MinusIcon /> {t('admin.users.detail.balance.subtract')}
-                </button>
+            {hasPermission('users:balance') && (
+              <div className="space-y-3 rounded-xl bg-dark-800/50 p-4">
+                <input
+                  type="number"
+                  value={balanceAmount}
+                  onChange={createNumberInputHandler(setBalanceAmount)}
+                  placeholder={t('admin.users.detail.balance.amountPlaceholder')}
+                  className="input"
+                />
+                <input
+                  type="text"
+                  value={balanceDescription}
+                  onChange={(e) => setBalanceDescription(e.target.value)}
+                  placeholder={t('admin.users.detail.balance.descriptionPlaceholder')}
+                  className="input"
+                  maxLength={500}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleUpdateBalance(true)}
+                    disabled={actionLoading || balanceAmount === ''}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-success-500 py-2 text-white transition-colors hover:bg-success-600 disabled:opacity-50"
+                  >
+                    <PlusIcon /> {t('admin.users.detail.balance.add')}
+                  </button>
+                  <button
+                    onClick={() => handleUpdateBalance(false)}
+                    disabled={actionLoading || balanceAmount === ''}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-error-500 py-2 text-white transition-colors hover:bg-error-600 disabled:opacity-50"
+                  >
+                    <MinusIcon /> {t('admin.users.detail.balance.subtract')}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Active promo offer */}
             {user.promo_offer_discount_percent > 0 && (
@@ -1862,38 +2056,40 @@ export default function AdminUserDetail() {
             )}
 
             {/* Send promo offer */}
-            <div className="rounded-xl bg-dark-800/50 p-4">
-              <div className="mb-3 text-sm font-medium text-dark-200">
-                {t('admin.users.detail.sendOffer')}
+            {hasPermission('users:send_offer') && (
+              <div className="rounded-xl bg-dark-800/50 p-4">
+                <div className="mb-3 text-sm font-medium text-dark-200">
+                  {t('admin.users.detail.sendOffer')}
+                </div>
+                <div className="space-y-3">
+                  <input
+                    type="number"
+                    value={offerDiscountPercent}
+                    onChange={createNumberInputHandler(setOfferDiscountPercent, 1)}
+                    placeholder={t('admin.users.detail.discountPercent')}
+                    className="input"
+                    min={1}
+                    max={100}
+                  />
+                  <input
+                    type="number"
+                    value={offerValidHours}
+                    onChange={createNumberInputHandler(setOfferValidHours, 1)}
+                    placeholder={t('admin.users.detail.validHours')}
+                    className="input"
+                    min={1}
+                    max={8760}
+                  />
+                  <button
+                    onClick={handleSendOffer}
+                    disabled={offerSending || offerDiscountPercent === '' || offerValidHours === ''}
+                    className="btn-primary w-full disabled:opacity-50"
+                  >
+                    {offerSending ? t('common.loading') : t('admin.users.detail.sendOffer')}
+                  </button>
+                </div>
               </div>
-              <div className="space-y-3">
-                <input
-                  type="number"
-                  value={offerDiscountPercent}
-                  onChange={createNumberInputHandler(setOfferDiscountPercent, 1)}
-                  placeholder={t('admin.users.detail.discountPercent')}
-                  className="input"
-                  min={1}
-                  max={100}
-                />
-                <input
-                  type="number"
-                  value={offerValidHours}
-                  onChange={createNumberInputHandler(setOfferValidHours, 1)}
-                  placeholder={t('admin.users.detail.validHours')}
-                  className="input"
-                  min={1}
-                  max={8760}
-                />
-                <button
-                  onClick={handleSendOffer}
-                  disabled={offerSending || offerDiscountPercent === '' || offerValidHours === ''}
-                  className="btn-primary w-full disabled:opacity-50"
-                >
-                  {offerSending ? t('common.loading') : t('admin.users.detail.sendOffer')}
-                </button>
-              </div>
-            </div>
+            )}
 
             {/* Recent transactions */}
             {user.recent_transactions.length > 0 && (
@@ -2320,6 +2516,130 @@ export default function AdminUserDetail() {
                       </button>
                     );
                   })}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Gifts Tab */}
+        {activeTab === 'gifts' && (
+          <div className="space-y-6">
+            {giftsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+              </div>
+            ) : !giftsData || (giftsData.sent.length === 0 && giftsData.received.length === 0) ? (
+              <div className="flex flex-col items-center justify-center rounded-xl bg-dark-800/50 py-16">
+                <svg
+                  className="mb-3 h-12 w-12 text-dark-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+                  />
+                </svg>
+                <p className="text-sm text-dark-500">{t('admin.users.detail.gifts.noGifts')}</p>
+              </div>
+            ) : (
+              <>
+                {/* Summary counters */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-dark-800/50 p-4">
+                    <div className="mb-1 text-xs text-dark-500">
+                      {t('admin.users.detail.gifts.totalSent')}
+                    </div>
+                    <div className="text-2xl font-bold text-accent-400">{giftsData.sent_total}</div>
+                  </div>
+                  <div className="rounded-xl bg-dark-800/50 p-4">
+                    <div className="mb-1 text-xs text-dark-500">
+                      {t('admin.users.detail.gifts.totalReceived')}
+                    </div>
+                    <div className="text-2xl font-bold text-success-400">
+                      {giftsData.received_total}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sent Gifts */}
+                <div>
+                  <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-dark-200">
+                    <svg
+                      className="h-4 w-4 text-accent-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+                      />
+                    </svg>
+                    {t('admin.users.detail.gifts.sentTitle')}
+                    <span className="text-dark-500">({giftsData.sent_total})</span>
+                  </h3>
+                  {giftsData.sent.length === 0 ? (
+                    <div className="rounded-xl bg-dark-800/30 py-6 text-center text-sm text-dark-500">
+                      {t('admin.users.detail.gifts.noSent')}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {giftsData.sent.map((gift) => (
+                        <GiftCard
+                          key={gift.id}
+                          gift={gift}
+                          direction="sent"
+                          locale={locale}
+                          onNavigateToUser={(id) => navigate(`/admin/users/${id}`)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Received Gifts */}
+                <div>
+                  <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-dark-200">
+                    <svg
+                      className="h-4 w-4 text-success-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859"
+                      />
+                    </svg>
+                    {t('admin.users.detail.gifts.receivedTitle')}
+                    <span className="text-dark-500">({giftsData.received_total})</span>
+                  </h3>
+                  {giftsData.received.length === 0 ? (
+                    <div className="rounded-xl bg-dark-800/30 py-6 text-center text-sm text-dark-500">
+                      {t('admin.users.detail.gifts.noReceived')}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {giftsData.received.map((gift) => (
+                        <GiftCard
+                          key={gift.id}
+                          gift={gift}
+                          direction="received"
+                          locale={locale}
+                          onNavigateToUser={(id) => navigate(`/admin/users/${id}`)}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </>
             )}

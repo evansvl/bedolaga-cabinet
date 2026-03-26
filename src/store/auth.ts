@@ -1,9 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { RegisterResponse, User } from '../types';
+import type { CampaignBonusInfo, RegisterResponse, User } from '../types';
 import { authApi } from '../api/auth';
 import { apiClient } from '../api/client';
+import { captureCampaignFromUrl, consumeCampaignSlug } from '../utils/campaign';
+import { captureReferralFromUrl, consumeReferralCode } from '../utils/referral';
 import { tokenStorage, isTokenValid, tokenRefreshManager } from '../utils/token';
+import { usePermissionStore } from './permissions';
 
 export interface TelegramWidgetData {
   id: number;
@@ -22,18 +25,27 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   isAdmin: boolean;
+  pendingCampaignBonus: CampaignBonusInfo | null;
 
   setTokens: (accessToken: string, refreshToken: string) => void;
   setUser: (user: User) => void;
   setIsAdmin: (isAdmin: boolean) => void;
+  clearCampaignBonus: () => void;
   logout: () => void;
   initialize: () => Promise<void>;
   refreshUser: () => Promise<void>;
   checkAdminStatus: () => Promise<void>;
   loginWithTelegram: (initData: string) => Promise<void>;
   loginWithTelegramWidget: (data: TelegramWidgetData) => Promise<void>;
+  loginWithTelegramOIDC: (idToken: string) => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
-  loginWithOAuth: (provider: string, code: string, state: string) => Promise<void>;
+  loginWithOAuth: (
+    provider: string,
+    code: string,
+    state: string,
+    deviceId?: string | null,
+  ) => Promise<void>;
+  loginWithDeepLink: (token: string, campaignSlug?: string | null) => Promise<void>;
   registerWithEmail: (
     email: string,
     password: string,
@@ -42,8 +54,6 @@ interface AuthState {
   ) => Promise<RegisterResponse>;
 }
 
-// Блокировка для предотвращения race condition при инициализации
-// Используем объект для атомарности операций
 const initState = {
   promise: null as Promise<void> | null,
   isInitializing: false,
@@ -59,8 +69,14 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: true,
       isAdmin: false,
+      pendingCampaignBonus: null,
+
+      clearCampaignBonus: () => set({ pendingCampaignBonus: null }),
 
       setTokens: (accessToken, refreshToken) => {
+        if (!accessToken || !refreshToken) {
+          throw new Error('Invalid tokens: cannot store empty credentials');
+        }
         tokenStorage.setTokens(accessToken, refreshToken);
         set({
           accessToken,
@@ -78,14 +94,12 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        // Get refresh token from secure storage, not zustand state
         const refreshToken = tokenStorage.getRefreshToken();
         if (refreshToken) {
-          authApi.logout(refreshToken).catch(() => {
-            // Logout API call failed - ignore silently
-          });
+          authApi.logout(refreshToken).catch(() => {});
         }
         tokenStorage.clearTokens();
+        usePermissionStore.getState().reset();
         set({
           accessToken: null,
           refreshToken: null,
@@ -100,13 +114,19 @@ export const useAuthStore = create<AuthState>()(
           const token = tokenStorage.getAccessToken();
           if (!token || !isTokenValid(token)) {
             set({ isAdmin: false });
+            usePermissionStore.getState().reset();
             return;
           }
-          // Используем apiClient для единообразной обработки ошибок
           const response = await apiClient.get<{ is_admin: boolean }>('/cabinet/auth/me/is-admin');
           set({ isAdmin: response.data.is_admin });
+          if (response.data.is_admin) {
+            await usePermissionStore.getState().fetchPermissions();
+          } else {
+            usePermissionStore.getState().reset();
+          }
         } catch {
           set({ isAdmin: false });
+          usePermissionStore.getState().reset();
         }
       },
 
@@ -114,18 +134,14 @@ export const useAuthStore = create<AuthState>()(
         try {
           const user = await authApi.getMe();
           set({ user });
-        } catch {
-          // Failed to refresh user - ignore silently
-        }
+        } catch {}
       },
 
       initialize: async () => {
-        // Защита от race condition - если уже инициализировано, выходим
         if (initState.isInitialized) {
           return;
         }
 
-        // Если уже идёт инициализация, ждём её завершения
         if (initState.isInitializing && initState.promise) {
           return initState.promise;
         }
@@ -135,7 +151,6 @@ export const useAuthStore = create<AuthState>()(
           try {
             set({ isLoading: true });
 
-            // Миграция токенов из localStorage (для обратной совместимости)
             tokenStorage.migrateFromLocalStorage();
 
             const accessToken = tokenStorage.getAccessToken();
@@ -146,15 +161,10 @@ export const useAuthStore = create<AuthState>()(
               return;
             }
 
-            // No access token or it's expired — try refresh
-            // This handles Mini App reopens where sessionStorage was cleared
-            // but refresh token persists in localStorage
             if (!isTokenValid(accessToken)) {
-              // Используем централизованный менеджер для refresh
               const newToken = await tokenRefreshManager.refreshAccessToken();
               if (newToken) {
                 const user = await authApi.getMe();
-                // Сначала проверяем admin статус, потом снимаем isLoading
                 await get().checkAdminStatus();
                 set({
                   accessToken: newToken,
@@ -178,7 +188,6 @@ export const useAuthStore = create<AuthState>()(
 
             try {
               const user = await authApi.getMe();
-              // Сначала проверяем admin статус, потом снимаем isLoading
               await get().checkAdminStatus();
               set({
                 accessToken,
@@ -188,12 +197,10 @@ export const useAuthStore = create<AuthState>()(
                 isLoading: false,
               });
             } catch {
-              // Token might be invalid on server, try to refresh
               const newToken = await tokenRefreshManager.refreshAccessToken();
               if (newToken) {
                 try {
                   const user = await authApi.getMe();
-                  // Сначала проверяем admin статус, потом снимаем isLoading
                   await get().checkAdminStatus();
                   set({
                     accessToken: newToken,
@@ -213,7 +220,6 @@ export const useAuthStore = create<AuthState>()(
                   });
                 }
               } else {
-                // Refresh failed, logout
                 tokenStorage.clearTokens();
                 set({
                   accessToken: null,
@@ -235,70 +241,117 @@ export const useAuthStore = create<AuthState>()(
       },
 
       loginWithTelegram: async (initData) => {
-        const response = await authApi.loginTelegram(initData);
+        const campaignSlug = consumeCampaignSlug();
+        const referralCode = consumeReferralCode();
+        const response = await authApi.loginTelegram(initData, campaignSlug, referralCode);
         tokenStorage.setTokens(response.access_token, response.refresh_token);
         set({
           accessToken: response.access_token,
           refreshToken: response.refresh_token,
           user: response.user,
           isAuthenticated: true,
+          pendingCampaignBonus: response.campaign_bonus || null,
         });
         await get().checkAdminStatus();
       },
 
       loginWithTelegramWidget: async (data) => {
-        const response = await authApi.loginTelegramWidget(data);
+        const campaignSlug = consumeCampaignSlug();
+        const referralCode = consumeReferralCode();
+        const response = await authApi.loginTelegramWidget(data, campaignSlug, referralCode);
         tokenStorage.setTokens(response.access_token, response.refresh_token);
         set({
           accessToken: response.access_token,
           refreshToken: response.refresh_token,
           user: response.user,
           isAuthenticated: true,
+          pendingCampaignBonus: response.campaign_bonus || null,
+        });
+        await get().checkAdminStatus();
+      },
+
+      loginWithTelegramOIDC: async (idToken) => {
+        const campaignSlug = consumeCampaignSlug();
+        const referralCode = consumeReferralCode();
+        const response = await authApi.loginTelegramOIDC(idToken, campaignSlug, referralCode);
+        tokenStorage.setTokens(response.access_token, response.refresh_token);
+        set({
+          accessToken: response.access_token,
+          refreshToken: response.refresh_token,
+          user: response.user,
+          isAuthenticated: true,
+          pendingCampaignBonus: response.campaign_bonus || null,
         });
         await get().checkAdminStatus();
       },
 
       loginWithEmail: async (email, password) => {
-        const response = await authApi.loginEmail(email, password);
+        const campaignSlug = consumeCampaignSlug();
+        const referralCode = consumeReferralCode();
+        const response = await authApi.loginEmail(email, password, campaignSlug, referralCode);
         tokenStorage.setTokens(response.access_token, response.refresh_token);
         set({
           accessToken: response.access_token,
           refreshToken: response.refresh_token,
           user: response.user,
           isAuthenticated: true,
+          pendingCampaignBonus: response.campaign_bonus || null,
         });
         await get().checkAdminStatus();
       },
 
-      loginWithOAuth: async (provider, code, state) => {
-        const response = await authApi.oauthCallback(provider, code, state);
+      loginWithOAuth: async (provider, code, state, deviceId) => {
+        const campaignSlug = consumeCampaignSlug();
+        const referralCode = consumeReferralCode();
+        const response = await authApi.oauthCallback(
+          provider,
+          code,
+          state,
+          deviceId,
+          campaignSlug,
+          referralCode,
+        );
         tokenStorage.setTokens(response.access_token, response.refresh_token);
         set({
           accessToken: response.access_token,
           refreshToken: response.refresh_token,
           user: response.user,
           isAuthenticated: true,
+          pendingCampaignBonus: response.campaign_bonus || null,
+        });
+        await get().checkAdminStatus();
+      },
+
+      loginWithDeepLink: async (token, campaignSlug) => {
+        const response = await authApi.pollDeepLinkToken(token, campaignSlug);
+        if (!response.access_token || !response.refresh_token) {
+          throw new Error('Invalid auth response: missing tokens');
+        }
+        tokenStorage.setTokens(response.access_token, response.refresh_token);
+        set({
+          accessToken: response.access_token,
+          refreshToken: response.refresh_token,
+          user: response.user,
+          isAuthenticated: true,
+          pendingCampaignBonus: response.campaign_bonus || null,
         });
         await get().checkAdminStatus();
       },
 
       registerWithEmail: async (email, password, firstName, referralCode) => {
-        // Registration now returns message, not tokens
-        // User must verify email before they can login
+        const code = referralCode || consumeReferralCode() || undefined;
         const response = await authApi.registerEmailStandalone({
           email,
           password,
           first_name: firstName,
           language: navigator.language.split('-')[0] || 'ru',
-          referral_code: referralCode,
+          referral_code: code,
         });
         return response;
       },
     }),
     {
       name: 'cabinet-auth',
-      // Only persist user info for UI caching
-      // Tokens are stored securely in sessionStorage via tokenStorage
       partialize: (state) => ({
         user: state.user,
       }),
@@ -306,5 +359,7 @@ export const useAuthStore = create<AuthState>()(
   ),
 );
 
-// Initialize auth on app load
+captureCampaignFromUrl();
+captureReferralFromUrl();
+
 useAuthStore.getState().initialize();

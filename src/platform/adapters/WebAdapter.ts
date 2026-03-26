@@ -12,7 +12,6 @@ import type {
   HapticNotificationType,
 } from '@/platform/types';
 
-// Storage key for local storage fallback
 const STORAGE_PREFIX = 'bedolaga_';
 
 function createCapabilities(): PlatformCapabilities {
@@ -154,7 +153,6 @@ function createCloudStorageController(): CloudStorageController {
       try {
         localStorage.setItem(STORAGE_PREFIX + key, value);
       } catch {
-        // Storage might be full or disabled
         console.warn('Failed to save to localStorage:', key);
       }
     },
@@ -203,11 +201,11 @@ export function createWebAdapter(): PlatformContext {
     },
 
     openLink(url: string, _options?: { tryInstantView?: boolean }) {
-      window.open(url, '_blank', 'noopener,noreferrer');
+      window.open(url, '_blank', 'noopener');
     },
 
     openTelegramLink(url: string) {
-      window.open(url, '_blank', 'noopener,noreferrer');
+      window.open(url, '_blank', 'noopener');
     },
 
     async share(text: string, url?: string): Promise<boolean> {

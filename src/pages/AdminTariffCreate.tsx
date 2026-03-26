@@ -9,6 +9,7 @@ import {
   TariffUpdateRequest,
   PeriodPrice,
   ServerInfo,
+  ExternalSquadInfo,
 } from '../api/tariffs';
 import { AdminBackButton } from '../components/admin';
 import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
@@ -105,6 +106,7 @@ export default function AdminTariffCreate() {
   const [tierLevel, setTierLevel] = useState<number | ''>(1);
   const [periodPrices, setPeriodPrices] = useState<PeriodPrice[]>([]);
   const [selectedSquads, setSelectedSquads] = useState<string[]>([]);
+  const [selectedExternalSquad, setSelectedExternalSquad] = useState<string | null>(null);
   const [selectedPromoGroups, setSelectedPromoGroups] = useState<number[]>([]);
   const [dailyPriceKopeks, setDailyPriceKopeks] = useState<number | ''>(0);
 
@@ -123,6 +125,9 @@ export default function AdminTariffCreate() {
   // Traffic reset mode
   const [trafficResetMode, setTrafficResetMode] = useState<string | null>(null);
 
+  // Gift visibility
+  const [showInGift, setShowInGift] = useState(true);
+
   // New period for adding
   const [newPeriodDays, setNewPeriodDays] = useState<number | ''>(30);
   const [newPeriodPrice, setNewPeriodPrice] = useState<number | ''>(300);
@@ -136,6 +141,12 @@ export default function AdminTariffCreate() {
   const { data: servers = [] } = useQuery({
     queryKey: ['admin-tariffs-servers'],
     queryFn: () => tariffsApi.getAvailableServers(),
+  });
+
+  // Fetch external squads
+  const { data: externalSquads = [] } = useQuery({
+    queryKey: ['admin-tariffs-external-squads'],
+    queryFn: () => tariffsApi.getAvailableExternalSquads(),
   });
 
   // Fetch promo groups
@@ -165,6 +176,7 @@ export default function AdminTariffCreate() {
       setTierLevel(data.tier_level || 1);
       setPeriodPrices(data.period_prices?.length ? data.period_prices : []);
       setSelectedSquads(data.allowed_squads || []);
+      setSelectedExternalSquad(data.external_squad_uuid || null);
       setSelectedPromoGroups(
         data.promo_groups?.filter((pg) => pg.is_selected).map((pg) => pg.id) || [],
       );
@@ -173,6 +185,7 @@ export default function AdminTariffCreate() {
       setMaxTopupTrafficGb(data.max_topup_traffic_gb || 0);
       setTrafficTopupPackages(data.traffic_topup_packages || {});
       setTrafficResetMode(data.traffic_reset_mode || null);
+      setShowInGift(data.show_in_gift ?? true);
       return data;
     }, []),
   });
@@ -203,6 +216,7 @@ export default function AdminTariffCreate() {
       name,
       description: description || undefined,
       is_active: isActive,
+      show_in_gift: showInGift,
       traffic_limit_gb: toNumber(trafficLimitGb, 100),
       device_limit: toNumber(deviceLimit, 1),
       device_price_kopeks:
@@ -211,6 +225,7 @@ export default function AdminTariffCreate() {
       tier_level: toNumber(tierLevel, 1),
       period_prices: isDaily ? [] : periodPrices.filter((p) => p.price_kopeks >= 0),
       allowed_squads: selectedSquads,
+      external_squad_uuid: selectedExternalSquad || null,
       promo_group_ids: selectedPromoGroups.length > 0 ? selectedPromoGroups : undefined,
       traffic_topup_enabled: trafficTopupEnabled,
       traffic_topup_packages: trafficTopupPackages,
@@ -660,6 +675,77 @@ export default function AdminTariffCreate() {
 
       {activeTab === 'servers' && (
         <div className="space-y-4">
+          {/* External Squad */}
+          {externalSquads.length > 0 && (
+            <div className="card space-y-4">
+              <h4 className="text-sm font-medium text-dark-200">
+                {t('admin.tariffs.externalSquadTitle')}
+              </h4>
+              <p className="text-sm text-dark-400">{t('admin.tariffs.externalSquadHint')}</p>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedExternalSquad(null)}
+                  className={`flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors ${
+                    !selectedExternalSquad
+                      ? isDaily
+                        ? 'bg-warning-500/20 text-warning-300'
+                        : 'bg-accent-500/20 text-accent-300'
+                      : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                  }`}
+                >
+                  <div
+                    className={`flex h-5 w-5 items-center justify-center rounded-full ${
+                      !selectedExternalSquad
+                        ? isDaily
+                          ? 'bg-warning-500 text-white'
+                          : 'bg-accent-500 text-white'
+                        : 'bg-dark-600'
+                    }`}
+                  >
+                    {!selectedExternalSquad && <CheckIcon />}
+                  </div>
+                  <span className="flex-1 text-sm font-medium">
+                    {t('admin.tariffs.noExternalSquad')}
+                  </span>
+                </button>
+                {externalSquads.map((squad: ExternalSquadInfo) => {
+                  const isSelected = selectedExternalSquad === squad.uuid;
+                  return (
+                    <button
+                      key={squad.uuid}
+                      type="button"
+                      onClick={() => setSelectedExternalSquad(squad.uuid)}
+                      className={`flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors ${
+                        isSelected
+                          ? isDaily
+                            ? 'bg-warning-500/20 text-warning-300'
+                            : 'bg-accent-500/20 text-accent-300'
+                          : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                      }`}
+                    >
+                      <div
+                        className={`flex h-5 w-5 items-center justify-center rounded-full ${
+                          isSelected
+                            ? isDaily
+                              ? 'bg-warning-500 text-white'
+                              : 'bg-accent-500 text-white'
+                            : 'bg-dark-600'
+                        }`}
+                      >
+                        {isSelected && <CheckIcon />}
+                      </div>
+                      <span className="flex-1 text-sm font-medium">{squad.name}</span>
+                      <span className="text-xs text-dark-500">
+                        {squad.members_count} {t('admin.tariffs.externalSquadUsers')}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Servers */}
           <div className="card space-y-4">
             <h4 className="text-sm font-medium text-dark-200">{t('admin.tariffs.serversTitle')}</h4>
@@ -1028,6 +1114,28 @@ export default function AdminTariffCreate() {
                 <span
                   className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${
                     isActive ? 'left-6' : 'left-1'
+                  }`}
+                />
+              </button>
+            </div>
+            {/* Show in gift toggle */}
+            <div className="flex items-center justify-between rounded-lg bg-dark-800 p-3">
+              <div>
+                <span className="text-sm font-medium text-dark-200">
+                  {t('admin.tariffs.showInGiftLabel')}
+                </span>
+                <p className="text-xs text-dark-500">{t('admin.tariffs.showInGiftHint')}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowInGift(!showInGift)}
+                className={`relative h-6 w-11 rounded-full transition-colors ${
+                  showInGift ? 'bg-accent-500' : 'bg-dark-600'
+                }`}
+              >
+                <span
+                  className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${
+                    showInGift ? 'left-6' : 'left-1'
                   }`}
                 />
               </button>

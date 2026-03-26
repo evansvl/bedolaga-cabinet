@@ -1,8 +1,72 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Animated gradient border — @property enables CSS-only angle animation */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.hover-border-gradient {
+  --_bg: var(--border-inner-bg, rgb(var(--color-dark-900)));
+  --_accent: var(--accent-color, rgb(var(--color-accent-400)));
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--_bg), var(--_bg)) padding-box,
+    conic-gradient(
+        from var(--border-angle),
+        var(--_accent) 0%,
+        transparent 25%,
+        transparent 75%,
+        var(--_accent) 100%
+      )
+      border-box;
+  animation: border-rotate var(--border-duration, 3s) linear infinite;
+}
+
+.hover-border-gradient {
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-border-gradient:hover,
+.hover-border-gradient:active {
+  box-shadow: 0 0 20px var(--accent-glow, rgba(var(--color-accent-400), 0.25));
+}
+
+.hover-border-gradient:disabled,
+.hover-border-gradient[disabled] {
+  box-shadow: none;
+  pointer-events: auto;
+}
+
+.light .hover-border-gradient {
+  --_bg: var(--border-inner-bg, rgb(var(--color-champagne-100)));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-border-gradient {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes border-rotate {
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+/* Aceternity UI background CSS variables */
+:root {
+  --blue-500: #3b82f6;
+  --indigo-300: #a5b4fc;
+  --blue-300: #93c5fd;
+  --violet-200: #ddd6fe;
+  --blue-400: #60a5fa;
+  --black: #000000;
+  --white: #ffffff;
+}
 
 @layer base {
   :root {
@@ -192,22 +256,30 @@
     position: relative;
   }
 
-  /* Global Noise Texture */
+  /* Global Noise Texture — no mix-blend-mode to avoid fullscreen GPU compositing */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    z-index: 0;
+    z-index: -1;
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    background-repeat: repeat;
     opacity: 0.03;
-    mix-blend-mode: overlay;
   }
 
-  /* Optimize main scrollable content */
+  /* Disable noise on mobile to save GPU */
+  @media (max-width: 1023px) {
+    body::before {
+      display: none;
+    }
+  }
+
+  /* Main content — containment removed to avoid GPU layer conflicts
+     with isolation: isolate on content wrapper */
   main {
-    /* Prevent layout shifts during scroll */
-    contain: layout style;
+    contain: content;
   }
 
   /* Light theme - Champagne */
@@ -285,7 +357,6 @@ img.twemoji {
     @apply border border-dark-700/40 bg-dark-900/70;
     border-radius: var(--bento-radius);
     padding: var(--bento-padding);
-    transform: translateZ(0);
     /* Glass Border - Inset Highlight */
     box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
     /* Stagger animation support */
@@ -297,7 +368,7 @@ img.twemoji {
 
   @media (min-width: 1024px) {
     .bento-card {
-      @apply bg-dark-900/50 backdrop-blur-sm;
+      @apply bg-dark-900/60;
     }
   }
 
@@ -310,12 +381,16 @@ img.twemoji {
 
   .bento-card-hover {
     @apply bento-card cursor-pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .bento-card-hover:hover {
     @apply border-dark-600/50 bg-dark-800/60 shadow-lg;
-    transform: translateY(-4px);
+    transform: translateY(-2px) translateZ(0);
     /* Intensify Glass Border & Add Top Spotlight */
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
@@ -339,22 +414,25 @@ img.twemoji {
   }
 
   .bento-card-hover:active {
-    transform: scale(0.98);
+    transform: scale(0.98) translateZ(0);
     transition-duration: 0.15s;
   }
 
   .bento-card-glow {
     @apply bento-card cursor-pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .bento-card-glow:hover {
     @apply border-accent-500/30 shadow-glow;
-    transform: translateY(-4px);
+    transform: translateY(-2px) translateZ(0);
   }
 
   .bento-card-glow:active {
-    transform: scale(0.98);
+    transform: scale(0.98) translateZ(0);
     transition-duration: 0.15s;
   }
 
@@ -385,13 +463,13 @@ img.twemoji {
 
   @media (min-width: 1024px) {
     .light .bento-card {
-      @apply bg-champagne-50/80 backdrop-blur-sm;
+      @apply bg-champagne-50/85;
     }
   }
 
   .light .bento-card-hover:hover {
     @apply border-champagne-400/50 bg-champagne-50 shadow-md;
-    transform: translateY(-4px);
+    transform: translateY(-2px) translateZ(0);
     /* Intensify Light Theme Glass Border */
     box-shadow:
       inset 0 1px 0 0 rgba(0, 0, 0, 0.06),
@@ -405,23 +483,21 @@ img.twemoji {
 
   .light .bento-card-glow:hover {
     @apply border-accent-400/40 shadow-lg;
-    transform: translateY(-4px);
+    transform: translateY(-2px) translateZ(0);
   }
 
   /* ========== DARK THEME COMPONENTS (default) ========== */
 
   /* Cards - Dark (unified style) */
   .card {
-    @apply border border-dark-700/40 bg-dark-900/70 p-5 transition-all duration-200 sm:p-6;
+    @apply border border-dark-700/40 bg-dark-900/70 p-5 transition-colors duration-200 sm:p-6;
     border-radius: var(--bento-radius);
-    transform: translateZ(0);
     box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
   }
 
-  /* Enable backdrop-blur only on desktop */
   @media (min-width: 1024px) {
     .card {
-      @apply bg-dark-900/50 backdrop-blur-sm;
+      @apply bg-dark-900/60;
     }
   }
 
@@ -440,9 +516,6 @@ img.twemoji {
   /* Glass effect - Dark (optimized for mobile) */
   .glass {
     @apply border border-dark-700/30 bg-dark-900/80;
-    /* GPU acceleration */
-    transform: translateZ(0);
-    will-change: transform;
   }
 
   /* Enable backdrop-blur only on desktop where it's performant */
@@ -454,7 +527,8 @@ img.twemoji {
 
   /* Buttons - Dark */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-smooth focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium duration-200 ease-smooth focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
   }
 
   .btn-primary {
@@ -474,7 +548,8 @@ img.twemoji {
   }
 
   .btn-icon {
-    @apply rounded-lg p-2 text-dark-400 transition-all duration-200 hover:bg-dark-800 hover:text-dark-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/50 active:scale-95;
+    @apply rounded-lg p-2 text-dark-400 duration-200 hover:bg-dark-800 hover:text-dark-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/50 active:scale-95;
+    transition-property: color, background-color, transform;
   }
 
   /* Highlighted button for onboarding */
@@ -484,7 +559,8 @@ img.twemoji {
 
   /* Inputs - Dark */
   .input {
-    @apply w-full rounded-xl border border-dark-700/50 bg-dark-800/50 px-4 py-3 text-sm text-dark-100 placeholder-dark-500 transition-all duration-200 focus:border-accent-500/50 focus:outline-none focus:ring-2 focus:ring-accent-500/20;
+    @apply w-full rounded-xl border border-dark-700/50 bg-dark-800/50 px-4 py-3 text-sm text-dark-100 placeholder-dark-500 duration-200 focus:border-accent-500/50 focus:outline-none focus:ring-2 focus:ring-accent-500/20;
+    transition-property: color, background-color, border-color, box-shadow;
   }
 
   .input-error {
@@ -547,7 +623,8 @@ img.twemoji {
   }
 
   .progress-fill {
-    @apply h-full rounded-full transition-all duration-500 ease-smooth;
+    @apply h-full rounded-full duration-500 ease-smooth;
+    transition-property: width, background-color;
   }
 
   /* Stat card - Dark */
@@ -561,7 +638,8 @@ img.twemoji {
 
   /* Navigation - Dark */
   .nav-item {
-    @apply flex items-center gap-3 rounded-xl px-4 py-3 text-dark-400 transition-all duration-200 hover:bg-dark-800/50 hover:text-dark-100;
+    @apply flex items-center gap-3 rounded-xl px-4 py-3 text-dark-400 duration-200 hover:bg-dark-800/50 hover:text-dark-100;
+    transition-property: color, background-color;
   }
 
   .nav-item-active {
@@ -588,7 +666,8 @@ img.twemoji {
   }
 
   .bottom-nav-item {
-    @apply flex min-w-[56px] flex-1 shrink-0 flex-col items-center justify-center rounded-2xl px-3 py-2.5 text-dark-500 transition-all duration-200;
+    @apply flex min-w-[56px] flex-1 shrink-0 flex-col items-center justify-center rounded-2xl px-3 py-2.5 text-dark-500 duration-200;
+    transition-property: color, background-color;
   }
 
   .bottom-nav-item:hover {
@@ -596,7 +675,8 @@ img.twemoji {
   }
 
   .bottom-nav-item-active {
-    @apply flex min-w-[56px] flex-1 shrink-0 flex-col items-center justify-center rounded-2xl bg-accent-500/15 px-3 py-2.5 text-accent-400 transition-all duration-200;
+    @apply flex min-w-[56px] flex-1 shrink-0 flex-col items-center justify-center rounded-2xl bg-accent-500/15 px-3 py-2.5 text-accent-400 duration-200;
+    transition-property: color, background-color;
   }
 
   /* Divider - Dark */
@@ -613,7 +693,8 @@ img.twemoji {
     .backdrop-blur-lg,
     .backdrop-blur-xl,
     .backdrop-blur-2xl,
-    .backdrop-blur-3xl {
+    .backdrop-blur-3xl,
+    .backdrop-blur-linear {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
     }
@@ -625,13 +706,12 @@ img.twemoji {
   .light .card {
     @apply border-champagne-300/50 bg-champagne-50/90 p-5 shadow-sm sm:p-6;
     border-radius: var(--bento-radius);
-    transform: translateZ(0);
     box-shadow: inset 0 1px 0 0 rgba(0, 0, 0, 0.03);
   }
 
   @media (min-width: 1024px) {
     .light .card {
-      @apply bg-champagne-50/80 backdrop-blur-sm;
+      @apply bg-champagne-50/85;
     }
   }
 
@@ -646,7 +726,6 @@ img.twemoji {
   /* Glass effect - Light (optimized for mobile) */
   .light .glass {
     @apply border border-champagne-300/40 bg-champagne-50/90;
-    transform: translateZ(0);
   }
 
   @media (min-width: 1024px) {
@@ -902,6 +981,14 @@ img.twemoji {
     @apply my-4 max-w-full rounded-xl;
   }
 
+  .prose mark {
+    @apply rounded bg-warning-500/30 px-1 text-dark-100;
+  }
+
+  .prose iframe {
+    @apply my-4 block aspect-video w-full max-w-2xl rounded-xl;
+  }
+
   /* Light theme prose styles */
   .light .prose {
     @apply text-champagne-800;
@@ -975,6 +1062,14 @@ img.twemoji {
     @apply border-champagne-300 text-champagne-700;
   }
 
+  .light .prose mark {
+    @apply bg-warning-400/30 text-champagne-900;
+  }
+
+  .light .prose iframe {
+    @apply border border-champagne-300;
+  }
+
   /* Support for plain text with line breaks */
   .prose-plain {
     @apply whitespace-pre-line;
@@ -1040,7 +1135,7 @@ img.twemoji {
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
@@ -1078,7 +1173,7 @@ img.twemoji {
   .btn:active,
   .card-hover:active,
   .nav-item:active {
-    transform: scale(0.98);
+    transform: scale(0.98) translateZ(0);
   }
 }
 
@@ -1187,7 +1282,9 @@ input[type='checkbox'] {
   border-radius: 0.375rem;
   background-color: rgb(var(--color-dark-700));
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
   position: relative;
   flex-shrink: 0;
 }
@@ -1431,183 +1528,26 @@ input[type='checkbox']:hover:not(:checked) {
   animation: wheel-glow 2s ease-in-out infinite;
 }
 
-/* Toast progress bar animation */
+/* Toast progress bar animation — use scaleX instead of width to avoid layout thrashing */
 @keyframes shrink {
   from {
-    width: 100%;
+    transform: scaleX(1);
   }
   to {
-    width: 0%;
+    transform: scaleX(0);
   }
 }
 
-/* ========== ANIMATED BACKGROUND (GPU Optimized) ========== */
-.wave-bg-container {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-  contain: strict; /* Performance: isolate repaints */
-}
-
-.wave-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px); /* Reduced from 80px for better performance */
-  opacity: 0.5;
-  /* GPU acceleration */
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* Smaller sizes for better performance */
-.wave-blob-1 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(var(--color-accent-800), 0.6) 0%, transparent 70%);
-  top: -15%;
-  left: -10%;
-  animation: wave1 20s ease-in-out infinite; /* Slower = less CPU */
-}
-
-.wave-blob-2 {
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, transparent 70%);
-  bottom: -10%;
-  right: -10%;
-  animation: wave2 25s ease-in-out infinite;
-}
-
-.wave-blob-3 {
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
-  top: 40%;
-  left: 40%;
-  animation: wave3 30s ease-in-out infinite;
-}
-
-.wave-blob-4 {
-  width: 250px;
-  height: 250px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.35) 0%, transparent 70%);
-  bottom: 25%;
-  left: 15%;
-  animation: wave4 22s ease-in-out infinite;
-}
-
-/* Simplified keyframes - fewer steps = better performance */
-@keyframes wave1 {
+/* News section shimmer */
+@keyframes newsShimmer {
   0%,
   100% {
-    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.3;
+    transform: scaleX(0.5);
   }
   50% {
-    transform: translate3d(8%, 12%, 0) scale(1.05);
-  }
-}
-
-@keyframes wave2 {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(-10%, -8%, 0) scale(1.08);
-  }
-}
-
-@keyframes wave3 {
-  0%,
-  100% {
-    transform: translate3d(-50%, -50%, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(-45%, -55%, 0) scale(1.1);
-  }
-}
-
-@keyframes wave4 {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(12%, -8%, 0) scale(1.12);
-  }
-}
-
-/* Light theme adjustments */
-.light .wave-blob {
-  opacity: 0.35;
-  filter: blur(80px);
-}
-
-.light .wave-blob-1 {
-  background: radial-gradient(circle, rgba(var(--color-accent-800), 0.7) 0%, transparent 70%);
-}
-
-/* Mobile: brighter and faster animations */
-@media (max-width: 768px) {
-  .wave-blob {
-    opacity: 0.7;
-    filter: blur(50px);
-  }
-
-  .wave-blob-1 {
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(var(--color-accent-800), 0.8) 0%, transparent 70%);
-    animation: wave1-mobile 12s ease-in-out infinite;
-  }
-
-  .wave-blob-2 {
-    width: 280px;
-    height: 280px;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.8) 0%, transparent 70%);
-    animation: wave2-mobile 15s ease-in-out infinite;
-  }
-
-  @keyframes wave1-mobile {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0) scale(1);
-    }
-    25% {
-      transform: translate3d(15%, 20%, 0) scale(1.1);
-    }
-    50% {
-      transform: translate3d(5%, 35%, 0) scale(1.15);
-    }
-    75% {
-      transform: translate3d(20%, 10%, 0) scale(1.05);
-    }
-  }
-
-  @keyframes wave2-mobile {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0) scale(1);
-    }
-    25% {
-      transform: translate3d(-20%, -15%, 0) scale(1.15);
-    }
-    50% {
-      transform: translate3d(-10%, -30%, 0) scale(1.1);
-    }
-    75% {
-      transform: translate3d(-25%, -5%, 0) scale(1.05);
-    }
-  }
-}
-
-/* Disable animations for reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  .wave-blob {
-    animation: none !important;
+    opacity: 1;
+    transform: scaleX(1);
   }
 }
 
@@ -1644,22 +1584,18 @@ input[type='checkbox']:hover:not(:checked) {
 @keyframes backdropFadeIn {
   from {
     opacity: 0;
-    backdrop-filter: blur(0);
   }
   to {
     opacity: 1;
-    backdrop-filter: blur(8px);
   }
 }
 
 @keyframes backdropFadeOut {
   from {
     opacity: 1;
-    backdrop-filter: blur(8px);
   }
   to {
     opacity: 0;
-    backdrop-filter: blur(0);
   }
 }
 

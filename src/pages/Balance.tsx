@@ -8,19 +8,13 @@ import { useAuthStore } from '../store/auth';
 import { balanceApi } from '../api/balance';
 import { useCurrency } from '../hooks/useCurrency';
 import { API } from '../config/constants';
-import { useToast } from '../components/Toast';
 import type { PaginatedResponse, Transaction } from '../types';
 
 import { Card } from '@/components/data-display/Card';
 import { Button } from '@/components/primitives/Button';
+import { ChevronDownIcon, ChevronRightIcon } from '@/components/icons';
 import { staggerContainer, staggerItem } from '@/components/motion/transitions';
-
-// Icons
-const ChevronDownIcon = ({ className = 'h-5 w-5' }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-  </svg>
-);
+import { isPaidStatus, isFailedStatus } from '../utils/paymentStatus';
 
 const WalletIcon = ({ className = 'h-8 w-8' }: { className?: string }) => (
   <svg
@@ -40,12 +34,11 @@ const WalletIcon = ({ className = 'h-8 w-8' }: { className?: string }) => (
 
 export default function Balance() {
   const { t } = useTranslation();
-  const { refreshUser } = useAuthStore();
+  const refreshUser = useAuthStore((state) => state.refreshUser);
   const queryClient = useQueryClient();
   const { formatAmount, currencySymbol } = useCurrency();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const paymentHandledRef = useRef(false);
 
   // Fetch balance from API
@@ -66,30 +59,19 @@ export default function Balance() {
     if (paymentHandledRef.current) return;
 
     const paymentStatus = searchParams.get('payment') || searchParams.get('status');
-    const isSuccess =
-      paymentStatus === 'success' ||
-      paymentStatus === 'paid' ||
-      paymentStatus === 'completed' ||
-      searchParams.get('success') === 'true';
+
+    const normalised = paymentStatus?.toLowerCase() ?? '';
+    const isSuccess = isPaidStatus(normalised) || searchParams.get('success') === 'true';
+    const isFailed = isFailedStatus(normalised);
 
     if (isSuccess) {
       paymentHandledRef.current = true;
-
-      refetchBalance();
-      refreshUser();
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-
-      showToast({
-        type: 'success',
-        title: t('balance.paymentSuccess.title'),
-        message: t('balance.paymentSuccess.message'),
-        duration: 6000,
-      });
-
-      navigate('/balance', { replace: true });
+      navigate('/balance/top-up/result?status=success', { replace: true });
+    } else if (isFailed) {
+      paymentHandledRef.current = true;
+      navigate('/balance/top-up/result?status=failed', { replace: true });
     }
-  }, [searchParams, navigate, refetchBalance, refreshUser, queryClient, showToast, t]);
+  }, [searchParams, navigate]);
 
   const [promocode, setPromocode] = useState('');
   const [promocodeLoading, setPromocodeLoading] = useState(false);
@@ -110,6 +92,15 @@ export default function Balance() {
   const { data: paymentMethods } = useQuery({
     queryKey: ['payment-methods'],
     queryFn: balanceApi.getPaymentMethods,
+  });
+
+  // Deferred: only fetch saved cards after payment methods loaded to avoid extra request on first render.
+  // The recurrent_enabled flag is cached for 5 min to prevent refetching on every Balance visit.
+  const { data: savedCardsData } = useQuery({
+    queryKey: ['saved-cards'],
+    queryFn: balanceApi.getSavedCards,
+    enabled: !!paymentMethods,
+    staleTime: 5 * 60 * 1000,
   });
 
   const normalizeType = (type: string) => type?.toUpperCase?.() ?? type;
@@ -164,6 +155,7 @@ export default function Balance() {
         await refetchBalance();
         await refreshUser();
         queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
       }
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: { detail?: string } } };
@@ -342,10 +334,15 @@ export default function Balance() {
                       animate="animate"
                     >
                       {transactions.items.map((tx) => {
-                        const isPositive = tx.amount_rubles >= 0;
+                        const isZero = tx.amount_rubles === 0;
+                        const isPositive = tx.amount_rubles > 0;
                         const displayAmount = Math.abs(tx.amount_rubles);
-                        const sign = isPositive ? '+' : '-';
-                        const colorClass = isPositive ? 'text-success-400' : 'text-error-400';
+                        const sign = isZero ? '' : isPositive ? '+' : '-';
+                        const colorClass = isZero
+                          ? 'text-dark-400'
+                          : isPositive
+                            ? 'text-success-400'
+                            : 'text-error-400';
 
                         return (
                           <motion.div
@@ -421,6 +418,21 @@ export default function Balance() {
           </AnimatePresence>
         </Card>
       </motion.div>
+
+      {/* Saved Cards Navigation */}
+      {savedCardsData?.recurrent_enabled && (
+        <motion.div variants={staggerItem}>
+          <Card interactive onClick={() => navigate('/balance/saved-cards')}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">💳</span>
+                <span className="font-medium text-dark-100">{t('balance.savedCards.title')}</span>
+              </div>
+              <ChevronRightIcon className="h-5 w-5 text-dark-400" />
+            </div>
+          </Card>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

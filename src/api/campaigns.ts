@@ -17,6 +17,8 @@ export interface CampaignListItem {
   registrations_count: number;
   total_revenue_kopeks: number;
   conversion_rate: number;
+  partner_user_id: number | null;
+  partner_name: string | null;
   created_at: string;
 }
 
@@ -40,10 +42,13 @@ export interface CampaignDetail {
   tariff_id: number | null;
   tariff_duration_days: number | null;
   tariff: TariffInfo | null;
+  partner_user_id: number | null;
+  partner_name: string | null;
   created_by: number | null;
   created_at: string;
   updated_at: string | null;
   deep_link: string | null;
+  web_link: string | null;
 }
 
 export interface CampaignCreateRequest {
@@ -58,6 +63,7 @@ export interface CampaignCreateRequest {
   subscription_squads?: string[];
   tariff_id?: number;
   tariff_duration_days?: number;
+  partner_user_id?: number | null;
 }
 
 export interface CampaignUpdateRequest {
@@ -72,6 +78,7 @@ export interface CampaignUpdateRequest {
   subscription_squads?: string[];
   tariff_id?: number;
   tariff_duration_days?: number;
+  partner_user_id?: number | null;
 }
 
 export interface CampaignToggleResponse {
@@ -104,6 +111,7 @@ export interface CampaignStatistics {
   conversion_rate: number;
   trial_conversion_rate: number;
   deep_link: string | null;
+  web_link: string | null;
 }
 
 export interface CampaignRegistrationItem {
@@ -141,6 +149,49 @@ export interface CampaignsOverview {
   total_tariff_issued: number;
 }
 
+export interface AdminDailyStatItem {
+  date: string;
+  referrals_count: number;
+  earnings_kopeks: number;
+}
+
+export interface AdminPeriodStats {
+  days: number;
+  referrals_count: number;
+  earnings_kopeks: number;
+}
+
+export interface AdminPeriodChange {
+  absolute: number;
+  percent: number;
+  trend: 'up' | 'down' | 'stable';
+}
+
+export interface AdminPeriodComparison {
+  current: AdminPeriodStats;
+  previous: AdminPeriodStats;
+  referrals_change: AdminPeriodChange;
+  earnings_change: AdminPeriodChange;
+}
+
+export interface AdminTopRegistrationItem {
+  id: number;
+  full_name: string;
+  created_at: string;
+  has_paid: boolean;
+  is_active: boolean;
+  total_earnings_kopeks: number;
+}
+
+export interface AdminCampaignChartData {
+  campaign_id: number;
+  total_deposits_kopeks: number;
+  total_spending_kopeks: number;
+  daily_stats: AdminDailyStatItem[];
+  period_comparison: AdminPeriodComparison;
+  top_registrations: AdminTopRegistrationItem[];
+}
+
 export interface ServerSquadInfo {
   id: number;
   squad_uuid: string;
@@ -155,6 +206,12 @@ export interface TariffListItem {
   is_active: boolean;
   traffic_limit_gb: number;
   device_limit: number;
+}
+
+export interface AvailablePartner {
+  user_id: number;
+  username: string | null;
+  first_name: string | null;
 }
 
 export const campaignsApi = {
@@ -236,6 +293,18 @@ export const campaignsApi = {
   // Get available tariffs for tariff bonus
   getAvailableTariffs: async (): Promise<TariffListItem[]> => {
     const response = await apiClient.get('/cabinet/admin/campaigns/available-tariffs');
+    return response.data;
+  },
+
+  // Get available partners for campaign assignment
+  getAvailablePartners: async (): Promise<AvailablePartner[]> => {
+    const response = await apiClient.get('/cabinet/admin/campaigns/available-partners');
+    return response.data;
+  },
+
+  // Get campaign chart data for analytics
+  getChartData: async (campaignId: number): Promise<AdminCampaignChartData> => {
+    const response = await apiClient.get(`/cabinet/admin/campaigns/${campaignId}/chart-data`);
     return response.data;
   },
 };

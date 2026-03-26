@@ -1,7 +1,3 @@
-/**
- * Утилиты для безопасной работы с JWT токенами
- */
-
 import axios from 'axios';
 
 const TOKEN_KEYS = {
@@ -18,10 +14,6 @@ interface JWTPayload {
   [key: string]: unknown;
 }
 
-/**
- * Декодирует JWT токен без верификации подписи
- * Используется только для чтения payload на клиенте
- */
 export function decodeJWT(token: string): JWTPayload | null {
   try {
     const parts = token.split('.');
@@ -35,11 +27,6 @@ export function decodeJWT(token: string): JWTPayload | null {
   }
 }
 
-/**
- * Проверяет, истёк ли срок действия токена
- * @param token JWT токен
- * @param bufferSeconds Буфер в секундах до истечения (по умолчанию 30 сек)
- */
 export function isTokenExpired(token: string | null, bufferSeconds = 30): boolean {
   if (!token) return true;
 
@@ -50,19 +37,11 @@ export function isTokenExpired(token: string | null, bufferSeconds = 30): boolea
   return payload.exp <= now + bufferSeconds;
 }
 
-/**
- * Проверяет, валиден ли токен (не истёк и корректный формат)
- */
 export function isTokenValid(token: string | null): boolean {
   if (!token) return false;
   return !isTokenExpired(token);
 }
 
-/**
- * Безопасное хранилище токенов
- * Access token: sessionStorage (short-lived, cleared on tab close)
- * Refresh token: localStorage (persistent, survives Mini App reopens, server-validated)
- */
 export const tokenStorage = {
   getAccessToken(): string | null {
     try {
@@ -74,7 +53,6 @@ export const tokenStorage = {
 
   getRefreshToken(): string | null {
     try {
-      // Refresh token in localStorage for persistence across Mini App reopens
       return localStorage.getItem(TOKEN_KEYS.REFRESH) || sessionStorage.getItem(TOKEN_KEYS.REFRESH);
     } catch {
       return null;
@@ -84,13 +62,9 @@ export const tokenStorage = {
   setTokens(accessToken: string, refreshToken: string): void {
     try {
       sessionStorage.setItem(TOKEN_KEYS.ACCESS, accessToken);
-      // Refresh token in localStorage — survives Mini App tab close/reopen
       localStorage.setItem(TOKEN_KEYS.REFRESH, refreshToken);
-      // Clean up old sessionStorage refresh token (migration)
       sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
-    } catch {
-      // Storage unavailable
-    }
+    } catch {}
   },
 
   setAccessToken(accessToken: string): void {
@@ -106,39 +80,26 @@ export const tokenStorage = {
       sessionStorage.removeItem(TOKEN_KEYS.ACCESS);
       sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
       sessionStorage.removeItem(TOKEN_KEYS.USER);
-      // Также очищаем localStorage для миграции со старой версии
       localStorage.removeItem(TOKEN_KEYS.ACCESS);
       localStorage.removeItem(TOKEN_KEYS.REFRESH);
       localStorage.removeItem(TOKEN_KEYS.USER);
-    } catch {
-      // ignore
-    }
+    } catch {}
   },
 
-  /**
-   * Миграция токенов для обратной совместимости.
-   * Access token: sessionStorage (short-lived, OK to lose on tab close)
-   * Refresh token: localStorage (persistent, survives Mini App reopens)
-   */
   migrateFromLocalStorage(): void {
     try {
       const accessToken = localStorage.getItem(TOKEN_KEYS.ACCESS);
-
-      // Migrate access token to sessionStorage
       if (accessToken && !sessionStorage.getItem(TOKEN_KEYS.ACCESS)) {
         sessionStorage.setItem(TOKEN_KEYS.ACCESS, accessToken);
       }
       localStorage.removeItem(TOKEN_KEYS.ACCESS);
 
-      // Migrate refresh token from sessionStorage to localStorage
       const refreshInSession = sessionStorage.getItem(TOKEN_KEYS.REFRESH);
       if (refreshInSession && !localStorage.getItem(TOKEN_KEYS.REFRESH)) {
         localStorage.setItem(TOKEN_KEYS.REFRESH, refreshInSession);
       }
       sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
-    } catch {
-      // ignore
-    }
+    } catch {}
   },
 
   getTelegramInitData(): string | null {
@@ -152,37 +113,48 @@ export const tokenStorage = {
   setTelegramInitData(data: string): void {
     try {
       sessionStorage.setItem(TOKEN_KEYS.TELEGRAM_INIT, data);
-    } catch {
-      // ignore
-    }
+    } catch {}
   },
 };
+
+function extractTelegramUserId(initData: string): string | null {
+  try {
+    const params = new URLSearchParams(initData);
+    const userJson = params.get('user');
+    if (!userJson) return null;
+    const user = JSON.parse(userJson);
+    return user.id != null ? String(user.id) : null;
+  } catch {
+    return null;
+  }
+}
+
+const TG_USER_ID_KEY = 'tg_user_id';
 
 export function clearStaleSessionIfNeeded(freshInitData: string | null): void {
   if (!freshInitData) return;
 
   try {
-    const stored = sessionStorage.getItem(TOKEN_KEYS.TELEGRAM_INIT);
+    const currentTgUserId = extractTelegramUserId(freshInitData);
+    const storedTgUserId = localStorage.getItem(TG_USER_ID_KEY);
 
-    if (stored && stored !== freshInitData) {
-      // New Telegram session (different user) — clear all auth tokens
+    if (storedTgUserId && currentTgUserId && storedTgUserId !== currentTgUserId) {
       sessionStorage.removeItem(TOKEN_KEYS.ACCESS);
       sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
       sessionStorage.removeItem(TOKEN_KEYS.USER);
       localStorage.removeItem(TOKEN_KEYS.REFRESH);
+      localStorage.removeItem('cabinet-auth');
+    }
+
+    if (currentTgUserId) {
+      localStorage.setItem(TG_USER_ID_KEY, currentTgUserId);
     }
 
     sessionStorage.setItem(TOKEN_KEYS.TELEGRAM_INIT, freshInitData);
     localStorage.removeItem(TOKEN_KEYS.TELEGRAM_INIT);
-  } catch {
-    // Storage недоступен
-  }
+  } catch {}
 }
 
-/**
- * Централизованный менеджер обновления токенов
- * Предотвращает множественные параллельные refresh запросы
- */
 class TokenRefreshManager {
   private isRefreshing = false;
   private refreshPromise: Promise<string | null> | null = null;
@@ -193,12 +165,7 @@ class TokenRefreshManager {
     this.refreshEndpoint = endpoint;
   }
 
-  /**
-   * Обновляет access token используя refresh token
-   * При множественных вызовах возвращает один и тот же Promise
-   */
   async refreshAccessToken(): Promise<string | null> {
-    // Если уже идёт refresh - возвращаем существующий Promise
     if (this.isRefreshing && this.refreshPromise) {
       return this.refreshPromise;
     }
@@ -221,9 +188,9 @@ class TokenRefreshManager {
     }
   }
 
+  // Uses plain axios (not apiClient) to avoid circular dependency
   private async doRefresh(refreshToken: string): Promise<string | null> {
     try {
-      // Используем чистый axios (не apiClient) чтобы избежать циклической зависимости
       const response = await axios.post<{ access_token?: string }>(
         this.refreshEndpoint,
         { refresh_token: refreshToken },
@@ -239,14 +206,10 @@ class TokenRefreshManager {
 
       return null;
     } catch {
-      // Token refresh failed - don't log sensitive error details
       return null;
     }
   }
 
-  /**
-   * Подписка на результат refresh (для ожидающих запросов)
-   */
   subscribe(callback: (token: string | null) => void): () => void {
     this.subscribers.push(callback);
     return () => {
@@ -259,16 +222,10 @@ class TokenRefreshManager {
     this.subscribers = [];
   }
 
-  /**
-   * Проверяет, идёт ли сейчас refresh
-   */
   get isRefreshInProgress(): boolean {
     return this.isRefreshing;
   }
 
-  /**
-   * Ожидает завершения текущего refresh (если есть)
-   */
   async waitForRefresh(): Promise<string | null> {
     if (this.refreshPromise) {
       return this.refreshPromise;
@@ -279,27 +236,17 @@ class TokenRefreshManager {
 
 export const tokenRefreshManager = new TokenRefreshManager();
 
-/**
- * Ключ для сохранения URL для возврата после логина
- */
 const RETURN_URL_KEY = 'auth_return_url';
 
-/**
- * Сохраняет URL для возврата после авторизации
- */
 export function saveReturnUrl(): void {
   if (typeof window !== 'undefined') {
     const currentPath = window.location.pathname + window.location.search;
-    // Не сохраняем /login как return URL
     if (currentPath && currentPath !== '/login') {
       sessionStorage.setItem(RETURN_URL_KEY, currentPath);
     }
   }
 }
 
-/**
- * Получает и очищает сохранённый URL для возврата
- */
 export function getAndClearReturnUrl(): string | null {
   if (typeof window !== 'undefined') {
     const url = sessionStorage.getItem(RETURN_URL_KEY);
@@ -309,40 +256,24 @@ export function getAndClearReturnUrl(): string | null {
   return null;
 }
 
-/**
- * Безопасный редирект на страницу логина
- * Валидирует URL чтобы предотвратить open redirect уязвимость
- * Сохраняет текущий URL для возврата после авторизации
- */
 export function safeRedirectToLogin(): void {
-  // Разрешённые пути для редиректа (относительные пути нашего приложения)
-  const loginPath = '/login';
-
-  // Проверяем, что мы на том же origin
   if (typeof window !== 'undefined') {
-    // Сохраняем текущий URL для возврата после логина
+    // Guard: don't redirect if already on /login to prevent infinite reload loops
+    if (window.location.pathname === '/login') return;
     saveReturnUrl();
-    // Используем только относительный путь для безопасности
-    window.location.href = loginPath;
+    window.location.href = '/login';
   }
 }
 
-/**
- * Валидирует URL для редиректа
- * Возвращает true только для безопасных URL (относительные пути или тот же origin)
- */
 export function isValidRedirectUrl(url: string): boolean {
-  // Пустой URL - небезопасен
   if (!url) return false;
 
-  // Относительные пути всегда безопасны
   if (url.startsWith('/') && !url.startsWith('//')) {
     return true;
   }
 
   try {
     const parsed = new URL(url, window.location.origin);
-    // Разрешаем только тот же origin
     return parsed.origin === window.location.origin;
   } catch {
     return false;

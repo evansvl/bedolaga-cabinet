@@ -3,8 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/auth';
+import { useShallow } from 'zustand/shallow';
 import { brandingApi } from '../api/branding';
 import { isInTelegramWebApp, getTelegramInitData } from '../hooks/useTelegramSDK';
+import { tokenStorage } from '../utils/token';
 
 // Validate redirect URL to prevent open redirect attacks
 const getSafeRedirectUrl = (url: string | null): string => {
@@ -33,7 +35,17 @@ export default function TelegramRedirect() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { loginWithTelegram, isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const {
+    loginWithTelegram,
+    isAuthenticated,
+    isLoading: authLoading,
+  } = useAuthStore(
+    useShallow((state) => ({
+      loginWithTelegram: state.loginWithTelegram,
+      isAuthenticated: state.isAuthenticated,
+      isLoading: state.isLoading,
+    })),
+  );
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'not-telegram'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(() => {
@@ -106,6 +118,14 @@ export default function TelegramRedirect() {
     const newCount = retryCount + 1;
     setRetryCount(newCount);
     sessionStorage.setItem(RETRY_COUNT_KEY, String(newCount));
+
+    // Clear all cached auth state to prevent stale token/initData loops
+    tokenStorage.clearTokens();
+    sessionStorage.removeItem('tapps/launchParams');
+    sessionStorage.removeItem('telegram_init_data');
+    localStorage.removeItem('cabinet-auth');
+    localStorage.removeItem('tg_user_id');
+
     setStatus('loading');
     setErrorMessage('');
     window.location.reload();

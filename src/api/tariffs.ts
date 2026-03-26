@@ -32,6 +32,7 @@ export interface TariffListItem {
   description: string | null;
   is_active: boolean;
   is_trial_available: boolean;
+  show_in_gift: boolean;
   is_daily: boolean;
   daily_price_kopeks: number;
   traffic_limit_gb: number;
@@ -54,6 +55,7 @@ export interface TariffDetail {
   description: string | null;
   is_active: boolean;
   is_trial_available: boolean;
+  show_in_gift: boolean;
   traffic_limit_gb: number;
   device_limit: number;
   device_price_kopeks: number | null;
@@ -85,6 +87,8 @@ export interface TariffDetail {
   daily_price_kopeks: number;
   // Режим сброса трафика
   traffic_reset_mode: string | null; // 'DAY', 'WEEK', 'MONTH', 'NO_RESET', null = глобальная настройка
+  // Внешний сквад RemnaWave
+  external_squad_uuid: string | null;
   created_at: string;
   updated_at: string | null;
 }
@@ -93,6 +97,7 @@ export interface TariffCreateRequest {
   name: string;
   description?: string;
   is_active?: boolean;
+  show_in_gift?: boolean;
   traffic_limit_gb?: number;
   device_limit?: number;
   device_price_kopeks?: number;
@@ -121,12 +126,21 @@ export interface TariffCreateRequest {
   daily_price_kopeks?: number;
   // Режим сброса трафика
   traffic_reset_mode?: string | null;
+  // Внешний сквад RemnaWave
+  external_squad_uuid?: string | null;
+}
+
+export interface ExternalSquadInfo {
+  uuid: string;
+  name: string;
+  members_count: number;
 }
 
 export interface TariffUpdateRequest {
   name?: string;
   description?: string;
   is_active?: boolean;
+  show_in_gift?: boolean;
   traffic_limit_gb?: number;
   device_limit?: number;
   device_price_kopeks?: number;
@@ -156,6 +170,8 @@ export interface TariffUpdateRequest {
   daily_price_kopeks?: number;
   // Режим сброса трафика
   traffic_reset_mode?: string | null;
+  // Внешний сквад RemnaWave
+  external_squad_uuid?: string | null;
 }
 
 export interface TariffToggleResponse {
@@ -247,6 +263,12 @@ export const tariffsApi = {
   // Get available promo groups for selection
   getAvailablePromoGroups: async (): Promise<{ id: number; name: string }[]> => {
     const response = await apiClient.get('/cabinet/admin/payment-methods/promo-groups');
+    return response.data;
+  },
+
+  // Get available external squads from RemnaWave
+  getAvailableExternalSquads: async (): Promise<ExternalSquadInfo[]> => {
+    const response = await apiClient.get('/cabinet/admin/tariffs/available-external-squads');
     return response.data;
   },
 };

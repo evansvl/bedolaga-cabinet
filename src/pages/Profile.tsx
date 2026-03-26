@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -61,7 +61,9 @@ const PencilIcon = () => (
 
 export default function Profile() {
   const { t } = useTranslation();
-  const { user, setUser } = useAuthStore();
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
   const queryClient = useQueryClient();
 
   const [email, setEmail] = useState('');
@@ -77,6 +79,7 @@ export default function Profile() {
   const [changeCode, setChangeCode] = useState('');
   const [changeError, setChangeError] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [verificationResendCooldown, setVerificationResendCooldown] = useState(0);
   const newEmailInputRef = useRef<HTMLInputElement>(null);
   const codeInputRef = useRef<HTMLInputElement>(null);
 
@@ -104,6 +107,7 @@ export default function Profile() {
     staleTime: 60000,
   });
   const isEmailAuthEnabled = emailAuthConfig?.enabled ?? true;
+  const isEmailVerificationEnabled = emailAuthConfig?.verification_enabled ?? true;
 
   // Build referral link for cabinet
   const referralLink = referralInfo?.referral_code
@@ -171,6 +175,7 @@ export default function Profile() {
     onSuccess: () => {
       setSuccess(t('profile.verificationResent'));
       setError(null);
+      setVerificationResendCooldown(UI.RESEND_COOLDOWN_SEC);
     },
     onError: (err: { response?: { data?: { detail?: string } } }) => {
       setError(err.response?.data?.detail || t('common.error'));
@@ -228,7 +233,7 @@ export default function Profile() {
     },
   });
 
-  // Resend cooldown timer
+  // Resend cooldown timers
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const timer = setInterval(() => {
@@ -236,6 +241,14 @@ export default function Profile() {
     }, 1000);
     return () => clearInterval(timer);
   }, [resendCooldown]);
+
+  useEffect(() => {
+    if (verificationResendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setVerificationResendCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [verificationResendCooldown]);
 
   // Auto-focus inputs on step change
   useEffect(() => {
@@ -383,6 +396,29 @@ export default function Profile() {
         </Card>
       </motion.div>
 
+      {/* Connected Accounts Link */}
+      <motion.div variants={staggerItem}>
+        <Card interactive onClick={() => navigate('/profile/accounts')}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-dark-100">
+                {t('profile.accounts.goToAccounts')}
+              </h2>
+              <p className="text-sm text-dark-400">{t('profile.accounts.subtitle')}</p>
+            </div>
+            <svg
+              className="h-5 w-5 text-dark-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </div>
+        </Card>
+      </motion.div>
+
       {/* Referral Link Widget */}
       {referralTerms?.is_enabled && referralLink && (
         <motion.div variants={staggerItem}>
@@ -439,13 +475,13 @@ export default function Profile() {
                     <span className="font-medium text-dark-100">{user.email}</span>
                     {user.email_verified ? (
                       <span className="badge-success">{t('profile.verified')}</span>
-                    ) : (
+                    ) : isEmailVerificationEnabled ? (
                       <span className="badge-warning">{t('profile.notVerified')}</span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
 
-                {!user.email_verified && (
+                {!user.email_verified && isEmailVerificationEnabled && (
                   <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-4">
                     <p className="mb-4 text-sm text-warning-400">
                       {t('profile.verificationRequired')}
@@ -454,34 +490,34 @@ export default function Profile() {
                       <Button
                         onClick={() => resendVerificationMutation.mutate()}
                         loading={resendVerificationMutation.isPending}
+                        disabled={verificationResendCooldown > 0}
                       >
-                        {t('profile.resendVerification')}
+                        {verificationResendCooldown > 0
+                          ? t('profile.resendIn', { seconds: verificationResendCooldown })
+                          : t('profile.resendVerification')}
                       </Button>
-                      {(user.auth_type === 'telegram' || user.auth_type === 'email') && (
-                        <button
-                          onClick={() => setChangeEmailStep('email')}
-                          className="text-sm text-accent-400 transition-colors hover:text-accent-300"
-                        >
-                          {t('profile.changeEmail.button')}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setChangeEmailStep('email')}
+                        className="text-sm text-accent-400 transition-colors hover:text-accent-300"
+                      >
+                        {t('profile.changeEmail.button')}
+                      </button>
                     </div>
                   </div>
                 )}
 
-                {user.email_verified &&
-                  (user.auth_type === 'telegram' || user.auth_type === 'email') && (
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-dark-400">{t('profile.canLoginWithEmail')}</p>
-                      <button
-                        onClick={() => setChangeEmailStep('email')}
-                        className="flex items-center gap-2 text-sm text-accent-400 transition-colors hover:text-accent-300"
-                      >
-                        <PencilIcon />
-                        <span>{t('profile.changeEmail.button')}</span>
-                      </button>
-                    </div>
-                  )}
+                {user.email_verified && (
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-dark-400">{t('profile.canLoginWithEmail')}</p>
+                    <button
+                      onClick={() => setChangeEmailStep('email')}
+                      className="flex items-center gap-2 text-sm text-accent-400 transition-colors hover:text-accent-300"
+                    >
+                      <PencilIcon />
+                      <span>{t('profile.changeEmail.button')}</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Inline email change flow */}
                 <AnimatePresence>

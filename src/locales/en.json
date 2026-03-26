@@ -44,7 +44,8 @@
     "polls": "Polls",
     "info": "Info",
     "wheel": "Fortune Wheel",
-    "menu": "Menu"
+    "menu": "Menu",
+    "gift": "Gift"
   },
   "notifications": {
     "ticketNotifications": "Ticket Notifications",
@@ -69,6 +70,12 @@
     "newReplyTitle": "New Reply",
     "newUserReply": "User replied in ticket: {{title}}",
     "newUserReplyTitle": "User Reply"
+  },
+  "campaignBonus": {
+    "title": "Bonus activated!",
+    "balance": "You received {{amount}} RUB from campaign \"{{name}}\"",
+    "subscription": "You received a {{days}}-day subscription from campaign \"{{name}}\"",
+    "tariff": "You received tariff \"{{tariff}}\" from campaign \"{{name}}\""
   },
   "wsNotifications": {
     "balance": {
@@ -164,10 +171,18 @@
     "telegramRetryFailed": "Authorization failed. Close the app and try again.",
     "telegramReopenHint": "If the problem persists, close and reopen the app",
     "telegramNotConfigured": "Telegram bot is not configured",
+    "telegramUnavailable": "Telegram login is temporarily unavailable",
     "authenticating": "Authenticating...",
     "orOpenInApp": "Or open the bot in the app",
     "loginFailed": "Login Failed",
+    "telegramWidgetBlocked": "Telegram login widget is unavailable. Use the bot to sign in:",
+    "openBotToLogin": "Open bot to sign in",
+    "waitingForConfirmation": "Waiting for confirmation...",
+    "deepLinkExpired": "Link expired. Please try again.",
     "tryAgain": "Try Again",
+    "scanQrToLogin": "Scan QR code with your phone camera",
+    "orSendCommand": "Or send the bot this command:",
+    "commandCopied": "Command copied",
     "welcomeBack": "Welcome back!",
     "loginTitle": "Login to Cabinet",
     "loginSubtitle": "Sign in with Telegram or use your email",
@@ -219,7 +234,62 @@
     "noActiveSubscription": "No active subscription",
     "devicesUsed": "Devices: {{used}} of {{total}}",
     "trafficUsed": "Traffic: {{used}} of {{total}} GB",
-    "unlimitedTraffic": "Unlimited traffic"
+    "unlimitedTraffic": "Unlimited traffic",
+    "zone": {
+      "normal": "Normal",
+      "warning": "Moderate",
+      "danger": "High",
+      "critical": "Critical"
+    },
+    "connectDevice": "Connect Device",
+    "devicesConnected": "{{count}} connected",
+    "devicesOfMax": "{{used}} of {{max}} connected",
+    "devicesConnectedUnlimited": "{{used}} connected · unlimited",
+    "devicesShort": "dev.",
+    "trafficUsage": "{{used}} / {{limit}} GB",
+    "trafficUsageTitle": "Traffic Usage",
+    "usedTraffic": "used {{amount}}",
+    "usedSuffix": "used",
+    "unlimited": "Unlimited",
+    "tariff": "Tariff",
+    "validUntil": "until {{date}}",
+    "remaining": "Remaining",
+    "daysRemaining": "Days left",
+    "usageLast14Days": "Usage last 14 days",
+    "maxUsage": "max {{amount}}",
+    "deviceLimitReached": "Disconnect devices to add new ones",
+    "expired": {
+      "title": "Subscription Expired",
+      "trialTitle": "Trial Expired",
+      "trialSubtitle": "Trial period ended",
+      "paidSubtitle": "Subscription has expired",
+      "renew": "Renew Subscription",
+      "quickRenew": "Quick Renew",
+      "insufficientFunds": "Insufficient balance",
+      "renewError": "Renewal error, try again",
+      "topUp": "Top up balance",
+      "balance": "Balance",
+      "tariffs": "Tariffs",
+      "traffic": "Traffic",
+      "devices": "Devices",
+      "expiredDate": "Expired"
+    },
+    "suspended": {
+      "title": "Subscription Suspended",
+      "resume": "Resume"
+    },
+    "trialOffer": {
+      "freeTitle": "Free Trial Available",
+      "paidTitle": "Trial Subscription",
+      "freeDesc": "Try our VPN for free — no commitment required",
+      "paidDesc": "Get started with a trial subscription"
+    },
+    "stats": {
+      "balance": "Balance",
+      "subscription": "Subscription",
+      "referrals": "Referrals",
+      "earnings": "Earnings"
+    }
   },
   "subscription": {
     "title": "Subscription",
@@ -229,6 +299,9 @@
     "inactive": "Inactive",
     "trialStatus": "Trial",
     "expired": "Expired",
+    "trafficLimited": "Traffic Exhausted",
+    "trafficLimitedTitle": "Traffic Limit Reached",
+    "trafficLimitedDescription": "Your traffic has been exhausted. Purchase additional traffic below to continue using VPN.",
     "expiresAt": "Expires at",
     "daysLeft": "Days left",
     "devices": "Devices",
@@ -237,6 +310,14 @@
     "serversLabel": "Servers",
     "servers_one": "{{count}} server",
     "servers_other": "{{count}} servers",
+    "locationsLabel": "Locations",
+    "locations_one": "{{count}} location",
+    "locations_other": "{{count}} locations",
+    "trafficReset": {
+      "DAY": "Resets daily",
+      "WEEK": "Resets weekly",
+      "MONTH": "Resets monthly"
+    },
     "traffic": "Traffic",
     "unlimited": "Unlimited",
     "used": "Used",
@@ -247,6 +328,7 @@
     "buyDevices": "Buy Devices",
     "renewalOptions": "Renewal Options",
     "days": "days",
+    "daysShort": "d.",
     "days_one": "{{count}} day",
     "days_other": "{{count}} days",
     "hours": "h",
@@ -258,6 +340,11 @@
     "price": "Price",
     "noSubscription": "You don't have an active subscription",
     "getSubscription": "Get Subscription",
+    "cta": {
+      "expiredHint": "Choose a plan and pay",
+      "trialHint": "More traffic and devices",
+      "activeHint": "Renewal and plan change"
+    },
     "connectionInfo": "Connection Info",
     "copyLink": "Copy Link",
     "copied": "Copied!",
@@ -271,6 +358,9 @@
     "daysBeforeExpiry_one": "{{count}} day before expiry",
     "daysBeforeExpiry_other": "{{count}} days before expiry",
     "selectPeriod": "Select Period",
+    "noPeriodsAvailable": "No available periods for renewal",
+    "noPeriodsAvailableHint": "The administrator has changed this plan's settings. Please choose a different plan to renew your subscription.",
+    "chooseDifferentTariff": "Choose a different plan",
     "selectTraffic": "Select Traffic",
     "selectServers": "Select Servers",
     "selectDevices": "Devices",
@@ -285,7 +375,10 @@
     "extraDevicesIncluded_other": "Incl. {{count}} extra dev.",
     "baseTariff": "Tariff",
     "perMonth": "/mo",
-    "summary": "Summary",
+    "summary": {
+      "period": "Period: {{label}}",
+      "traffic": "Traffic: {{gb}} GB"
+    },
     "total": "Total",
     "purchase": "Purchase",
     "step": "Step {{current}} of {{total}}",
@@ -359,7 +452,10 @@
       "notConfigured": "Connection methods are not configured yet",
       "notConfiguredUser": "Connection setup is in progress. Please check back later.",
       "notConfiguredAdmin": "No connection apps have been configured. Set them up in the Apps settings.",
-      "goToApps": "Go to Apps settings"
+      "goToApps": "Go to Apps settings",
+      "qrTitle": "Subscription QR Code",
+      "qrScanHint": "Scan to connect",
+      "qrButton": "QR Code"
     },
     "myDevices": "My Devices",
     "noDevices": "No connected devices",
@@ -375,6 +471,7 @@
     "pause": {
       "title": "Subscription Pause",
       "paused": "Paused",
+      "suspended": "Suspended (insufficient funds)",
       "active": "Active",
       "pauseBtn": "Pause",
       "resumeBtn": "Resume",
@@ -493,10 +590,6 @@
       "label": "Traffic",
       "selectVolume": "Select traffic volume",
       "default": "Default: {{label}}"
-    },
-    "summary": {
-      "period": "Period: {{label}}",
-      "traffic": "Traffic: {{gb}} GB"
     }
   },
   "balance": {
@@ -506,7 +599,56 @@
     "topUpBalance": "Top Up Balance",
     "enterAmount": "Enter amount",
     "paymentMethod": "Payment Method",
-    "paymentMethods": "Payment Methods",
+    "paymentMethods": {
+      "yookassa": {
+        "description": "Pay via YooKassa"
+      },
+      "cryptobot": {
+        "description": "Pay with cryptocurrency via CryptoBot"
+      },
+      "telegram_stars": {
+        "description": "Pay with Telegram Stars"
+      },
+      "heleket": {
+        "description": "Pay with cryptocurrency via Heleket"
+      },
+      "mulenpay": {
+        "description": "Pay via MulenPay"
+      },
+      "pal24": {
+        "description": "Pay via PAL24"
+      },
+      "platega": {
+        "description": "Pay via Platega"
+      },
+      "wata": {
+        "description": "Pay via Wata"
+      },
+      "cloudpayments": {
+        "description": "Pay with bank card via CloudPayments"
+      },
+      "freekassa": {
+        "description": "Pay via FreeKassa"
+      },
+      "freekassa_sbp": {
+        "description": "Pay via SBP (QR code)"
+      },
+      "freekassa_card": {
+        "description": "Pay with Russian bank card"
+      },
+      "tribute": {
+        "description": "Pay with bank card via Tribute"
+      },
+      "severpay": {
+        "description": "Pay via SeverPay"
+      },
+      "riopay": {
+        "description": "Pay via RioPay"
+      },
+      "kassa_ai": {
+        "description": "Pay via Kassa AI"
+      }
+    },
     "transactionHistory": "Transaction History",
     "noTransactions": "No transactions",
     "date": "Date",
@@ -548,46 +690,25 @@
     "topUpToComplete": "Top up your balance to complete the purchase",
     "missing": "Missing",
     "noPaymentMethods": "No payment methods available",
-    "paymentMethods": {
-      "yookassa": {
-        "description": "Pay via YooKassa"
-      },
-      "cryptobot": {
-        "description": "Pay with cryptocurrency via CryptoBot"
-      },
-      "telegram_stars": {
-        "description": "Pay with Telegram Stars"
-      },
-      "heleket": {
-        "description": "Pay with cryptocurrency via Heleket"
-      },
-      "mulenpay": {
-        "description": "Pay via MulenPay"
-      },
-      "pal24": {
-        "description": "Pay via PAL24"
-      },
-      "platega": {
-        "description": "Pay via Platega"
-      },
-      "wata": {
-        "description": "Pay via Wata"
-      },
-      "cloudpayments": {
-        "description": "Pay with bank card via CloudPayments"
-      },
-      "freekassa": {
-        "description": "Pay via FreeKassa"
-      },
-      "tribute": {
-        "description": "Pay with bank card via Tribute"
-      }
-    },
     "pendingPayments": {
       "title": "Pending Payments",
       "pay": "Pay",
       "checkStatus": "Check Status",
       "checking": "Checking..."
+    },
+    "savedCards": {
+      "title": "Saved Cards",
+      "card": "Card",
+      "unlink": "Unlink",
+      "confirmUnlink": "Are you sure you want to unlink this card? Automatic balance top-up will no longer be possible.",
+      "unlinkSuccess": "Card unlinked successfully",
+      "unlinkError": "Failed to unlink card",
+      "linkedAt": "Linked {{date}}",
+      "noCards": "Card will be saved automatically on next top-up",
+      "pageTitle": "Saved Cards",
+      "backToBalance": "Back",
+      "empty": "No saved cards. A card will be saved automatically on your next top-up.",
+      "loadError": "Failed to load saved cards. Please try again later."
     },
     "paymentReady": "Payment link is ready",
     "clickToOpenPayment": "Click the button below to open the payment page in a new tab",
@@ -605,12 +726,27 @@
     "paymentSuccess": {
       "title": "Payment Successful",
       "message": "Your balance has been topped up successfully. The funds are now available."
+    },
+    "topUpResult": {
+      "awaitingPayment": "Awaiting Payment",
+      "awaitingPaymentDesc": "We are waiting for your payment confirmation. This may take a few minutes.",
+      "topUpAmount": "Top-up amount",
+      "success": "Balance Topped Up!",
+      "successDesc": "Your balance has been topped up successfully. The funds are now available.",
+      "failed": "Payment Failed",
+      "failedDesc": "Unfortunately, the payment was not completed. Please try again or choose a different payment method.",
+      "timeout": "Taking Longer Than Expected",
+      "timeoutDesc": "Payment processing is taking longer than usual. You can try checking the status again.",
+      "goToBalance": "Go to Balance",
+      "tryAgain": "Try Again"
     }
   },
   "referral": {
     "title": "Referral Program",
-    "yourLink": "Your Referral Link",
-    "copyLink": "Copy Link",
+    "yourLink": "Your Referral Links",
+    "botLink": "Bot link",
+    "cabinetLink": "Cabinet link",
+    "copyLink": "Copy",
     "copied": "Copied!",
     "shareButton": "Share",
     "shareMessage": "Join me on {{botName}} and earn up to {{percent}}% cashback!",
@@ -630,6 +766,8 @@
     },
     "yourReferrals": "Your Referrals",
     "noReferrals": "No referrals yet. Share your link to invite friends!",
+    "anonymousUser": "User #{{id}}",
+    "anonymousReferral": "Referral",
     "user": "User",
     "joined": "Joined",
     "hasPaid": "Has Paid",
@@ -646,7 +784,107 @@
       "referral_subscription_renewal": "Referral Subscription Renewal",
       "referral_bonus": "Referral Bonus"
     },
-    "disabled": "Referral program is currently disabled"
+    "disabled": "Referral program is currently disabled",
+    "partner": {
+      "becomePartner": "Become a Partner",
+      "becomePartnerDesc": "Apply for the partner program to get higher commission rates and the ability to withdraw your earnings.",
+      "applyButton": "Apply",
+      "applyTitle": "Partner Application",
+      "applyDesc": "Fill out the form below to apply for our partner program. All fields are optional.",
+      "underReview": "Application Under Review",
+      "underReviewDesc": "Your partner application is being reviewed. We'll notify you once a decision is made.",
+      "submittedAt": "Submitted on {{date}}",
+      "partnerStatus": "Partner",
+      "active": "Active",
+      "commissionInfo": "Your partner commission rate is {{percent}}%",
+      "rejected": "Application Rejected",
+      "reapplyButton": "Reapply",
+      "applying": "Submitting...",
+      "submitApplication": "Submit Application",
+      "applyError": "Failed to submit application. Please try again.",
+      "yourCampaigns": "Your campaigns",
+      "campaignLinks": {
+        "bot": "Bot link",
+        "web": "Cabinet link"
+      },
+      "campaignBonus": {
+        "title": "Referral bonus",
+        "balance": "+{{amount}} to balance",
+        "balanceDesc": "{{amount}} credited on signup",
+        "subscription": "{{days}} days subscription",
+        "subscriptionDesc": "{{days}} days free subscription",
+        "tariff": "Bonus tariff",
+        "tariffDesc": "Free tariff plan"
+      },
+      "stats": {
+        "registrations": "Registrations",
+        "referrals": "Referrals",
+        "earnings": "Earnings",
+        "conversionRate": "Conversion",
+        "today": "Today",
+        "week": "Week",
+        "month": "Month",
+        "showDetails": "Details",
+        "hideDetails": "Collapse",
+        "vsLastWeek": "vs last week",
+        "topReferrals": "Top Referrals",
+        "noData": "No data",
+        "dailyChart": "30-day trends",
+        "periodComparison": "Period comparison",
+        "noReferrals": "No referrals yet",
+        "paid": "Paid",
+        "pending": "Pending",
+        "active": "Active",
+        "referralsCount": "Referrals",
+        "earningsAmount": "Earned"
+      },
+      "fields": {
+        "companyName": "Company Name",
+        "companyNamePlaceholder": "Your company or brand name",
+        "telegramChannel": "Telegram Channel",
+        "telegramChannelPlaceholder": "@yourchannel",
+        "websiteUrl": "Website URL",
+        "websiteUrlPlaceholder": "https://example.com",
+        "description": "Description",
+        "descriptionPlaceholder": "Tell us about your audience and how you plan to promote...",
+        "expectedReferrals": "Expected Monthly Referrals",
+        "expectedReferralsPlaceholder": "Estimated number per month",
+        "desiredCommission": "Desired Commission (%)",
+        "desiredCommissionPlaceholder": "From 1 to 100%"
+      }
+    },
+    "withdrawal": {
+      "title": "Withdrawal",
+      "goToWithdrawal": "Withdraw",
+      "available": "Available",
+      "totalEarned": "Total Earned",
+      "withdrawn": "Withdrawn",
+      "spent": "Spent on Services",
+      "pending": "Pending",
+      "requestButton": "Request Withdrawal",
+      "minAmount": "Minimum withdrawal amount: {{amount}}",
+      "history": "Withdrawal History",
+      "noHistory": "No withdrawal requests yet",
+      "requestTitle": "Request Withdrawal",
+      "requestDesc": "Available for withdrawal: {{available}}",
+      "requesting": "Submitting...",
+      "submitRequest": "Submit Request",
+      "requestError": "Failed to create withdrawal request. Please try again.",
+      "fields": {
+        "amount": "Amount",
+        "amountPlaceholder": "Enter amount in {{currency}}",
+        "amountHint": "Minimum: {{min}} {{currency}}",
+        "paymentDetails": "Payment Details",
+        "paymentDetailsPlaceholder": "Card number, wallet address, or other payment info..."
+      },
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "completed": "Completed",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled"
+      }
+    }
   },
   "support": {
     "title": "Support",
@@ -702,6 +940,7 @@
     "days_other": "{{count}} days",
     "subscriptionDays": "Subscription days",
     "day": "Day",
+    "spinCost": "Spin cost",
     "spin": "SPIN!",
     "spinning": "Spinning...",
     "history": "History",
@@ -718,7 +957,8 @@
       "cannotSpin": "Cannot spin right now",
       "insufficientBalance": "Insufficient balance",
       "topUpRequired": "Top up your balance to pay for spin",
-      "starsNotAvailable": "Stars payment not available. Open the app via Telegram."
+      "starsNotAvailable": "Stars payment not available. Open the app via Telegram.",
+      "noSubscription": "An active subscription is required to spin the wheel. Activate your subscription first."
     },
     "payWithStars": "Pay with Stars",
     "payWithDays": "Pay with days",
@@ -740,12 +980,103 @@
     }
   },
   "admin": {
+    "backgrounds": {
+      "title": "Animated Background",
+      "description": "Choose a type and configure animation settings",
+      "selectType": "Background Type",
+      "preview": "Preview",
+      "settings": "Settings",
+      "save": "Save",
+      "saved": "Saved",
+      "saving": "Saving...",
+      "enabled": "Background enabled",
+      "disabled": "Background disabled",
+      "reducedOnMobile": "Reduced mode on mobile",
+      "reducedOnMobileDesc": "Reduces particle count and disables interactivity",
+      "globalOpacity": "Opacity",
+      "globalBlur": "Blur",
+      "categoryCSS": "CSS",
+      "categoryCanvas": "Canvas",
+      "categorySVG": "SVG",
+      "aurora": "Aurora",
+      "auroraDesc": "Northern lights with smooth gradients",
+      "sparkles": "Sparkles",
+      "sparklesDesc": "Twinkling particles on the background",
+      "vortex": "Vortex",
+      "vortexDesc": "Spinning particle vortex",
+      "shootingStars": "Shooting Stars",
+      "shootingStarsDesc": "Falling stars on a starry sky",
+      "beams": "Beams",
+      "beamsDesc": "Light beams along SVG paths",
+      "beamsCollision": "Beams Collision",
+      "beamsCollisionDesc": "Exploding light beams",
+      "gradientAnimation": "Gradient Animation",
+      "gradientAnimationDesc": "Smoothly moving gradient blobs",
+      "wavy": "Wavy",
+      "wavyDesc": "Waves based on simplex noise",
+      "lines": "Lines",
+      "linesDesc": "Animated SVG waves",
+      "boxes": "Boxes",
+      "boxesDesc": "Grid of interactive blocks",
+      "meteors": "Meteors",
+      "meteorsDesc": "Flying meteors",
+      "grid": "Grid",
+      "gridDesc": "Minimalist grid pattern",
+      "dots": "Dots",
+      "dotsDesc": "Dot pattern",
+      "spotlight": "Spotlight",
+      "spotlightDesc": "Spotlight beam",
+      "noise": "Noise",
+      "noiseDesc": "Noise gradients with motion",
+      "ripple": "Ripple",
+      "rippleDesc": "Ripple wave effect",
+      "geminiEffect": "Gemini Effect",
+      "geminiEffectDesc": "SVG effect like Google Gemini",
+      "speed": "Speed",
+      "density": "Particle Density",
+      "particles": "Particle Count",
+      "count": "Count",
+      "hue": "Hue",
+      "rangeY": "Y Range",
+      "minSize": "Min Size",
+      "maxSize": "Max Size",
+      "minSpeed": "Min Speed",
+      "maxSpeed": "Max Speed",
+      "particleColor": "Particle Color",
+      "starColor": "Star Color",
+      "trailColor": "Trail Color",
+      "bgColor": "Background Color",
+      "fillColor": "Fill Color",
+      "color1": "Color 1",
+      "color2": "Color 2",
+      "color3": "Color 3",
+      "color4": "Color 4",
+      "color5": "Color 5",
+      "interactive": "Interactive (mouse)",
+      "size": "Size",
+      "radialGradient": "Radial Gradient",
+      "waveWidth": "Wave Width",
+      "blurAmount": "Blur",
+      "waveOpacity": "Wave Opacity",
+      "duration": "Duration",
+      "intensity": "Intensity",
+      "rows": "Rows",
+      "cols": "Columns",
+      "gridSize": "Grid Size",
+      "small": "Small",
+      "normal": "Normal",
+      "slow": "Slow",
+      "fast": "Fast",
+      "none": "No Background",
+      "noneDesc": "Disable animated background"
+    },
     "groups": {
       "analytics": "Analytics",
       "marketing": "Marketing",
       "system": "System",
       "tariffs": "Tariffs & Sales",
-      "users": "Users"
+      "users": "Users",
+      "security": "Security"
     },
     "nav": {
       "title": "Admin",
@@ -769,7 +1100,18 @@
       "promoGroups": "Discount Groups",
       "trafficUsage": "Traffic Usage",
       "updates": "Updates",
-      "pinnedMessages": "Pinned Messages"
+      "pinnedMessages": "Pinned Messages",
+      "partners": "Partners",
+      "withdrawals": "Withdrawals",
+      "channelSubscriptions": "Required Channels",
+      "roles": "Roles",
+      "roleAssign": "Role Assignment",
+      "policies": "Access Policies",
+      "auditLog": "Audit Log",
+      "salesStats": "Sales Statistics",
+      "landings": "Landings",
+      "referralNetwork": "Referral Network",
+      "news": "News"
     },
     "panel": {
       "title": "Admin Panel",
@@ -794,7 +1136,203 @@
       "promoGroupsDesc": "Discount groups for users",
       "trafficUsageDesc": "Per-user traffic by nodes",
       "updatesDesc": "Bot & cabinet versions",
-      "pinnedMessagesDesc": "Manage pinned messages for users"
+      "pinnedMessagesDesc": "Manage pinned messages for users",
+      "partnersDesc": "Manage partner applications and commissions",
+      "withdrawalsDesc": "Review and process withdrawal requests",
+      "channelSubscriptionsDesc": "Manage required channel subscriptions",
+      "rolesDesc": "Manage admin roles and permissions",
+      "roleAssignDesc": "Assign and revoke user roles",
+      "policiesDesc": "Configure ABAC access policies",
+      "auditLogDesc": "Review system activity and access history",
+      "salesStatsDesc": "Sales analytics and trends",
+      "landingsDesc": "Quick purchase landing pages",
+      "referralNetworkDesc": "Referral graph and campaign visualization",
+      "newsDesc": "Manage news articles and publications"
+    },
+    "salesStats": {
+      "title": "Sales Statistics",
+      "subtitle": "Revenue, trials, subscriptions, and renewals",
+      "period": {
+        "week": "7 days",
+        "month": "30 days",
+        "quarter": "90 days",
+        "all": "All time",
+        "custom": "Custom"
+      },
+      "tabs": {
+        "trials": "Trials",
+        "sales": "Sales",
+        "renewals": "Renewals",
+        "addons": "Add-ons",
+        "deposits": "Deposits"
+      },
+      "summary": {
+        "revenue": "Revenue",
+        "activeSubs": "Active Subs",
+        "activeTrials": "Active Trials",
+        "newTrials": "New Trials",
+        "conversion": "Conversion",
+        "renewals": "Renewals",
+        "addonRevenue": "Add-on Revenue",
+        "manualTopup": "Manual Top-ups"
+      },
+      "trials": {
+        "total": "Total Trials",
+        "totalRegistrations": "Registrations",
+        "trialsIssued": "Trials Issued",
+        "conversion": "Conversion Rate",
+        "avgDuration": "Avg Duration",
+        "byProvider": "By Registration Source",
+        "dailyChart": "Daily Registrations & Trials",
+        "registrations": "Registrations"
+      },
+      "sales": {
+        "totalSales": "Total Sales",
+        "avgOrder": "Avg Order",
+        "topTariff": "Top Tariff",
+        "byTariff": "Sales by Tariff",
+        "byPeriod": "By Subscription Period",
+        "dailyChart": "Daily Sales",
+        "dailyByTariff": "Sales by Tariff per Day",
+        "subscriptions": "Subscriptions"
+      },
+      "renewals": {
+        "total": "Total Renewals",
+        "rate": "Renewal Rate",
+        "revenue": "Revenue",
+        "comparison": "Period Comparison",
+        "currentPeriod": "Current Period",
+        "previousPeriod": "Previous Period",
+        "dailyChart": "Daily Renewals",
+        "renewals": "Renewals"
+      },
+      "addons": {
+        "totalPurchases": "Total Purchases",
+        "totalGb": "Total Traffic",
+        "revenue": "Revenue",
+        "devicePurchases": "Device Purchases",
+        "deviceRevenue": "Device Revenue",
+        "trafficPurchases": "Traffic",
+        "devicePurchasesDaily": "Devices",
+        "byPackage": "By Package Size",
+        "dailyChart": "Daily Add-on Purchases",
+        "purchases": "Purchases"
+      },
+      "deposits": {
+        "totalDeposits": "Total Deposits",
+        "totalAmount": "Total Amount",
+        "avgDeposit": "Avg Deposit",
+        "byMethod": "By Payment Method",
+        "dailyChart": "Daily Deposits",
+        "dailyByMethod": "Daily Deposits by Payment Method",
+        "revenue": "Revenue"
+      },
+      "loadError": "Failed to load statistics"
+    },
+    "referralNetwork": {
+      "title": "Referral Network",
+      "subtitle": "Referral graph and advertising campaign visualization",
+      "search": {
+        "placeholder": "Search by TG ID, @username, email, campaign...",
+        "noResults": "Nothing found",
+        "resultsCount": "Found: {{count}}",
+        "clear": "Clear search"
+      },
+      "filters": {
+        "title": "Filters",
+        "campaigns": "Campaigns",
+        "partnersOnly": "Partners only",
+        "minReferrals": "Min referrals",
+        "reset": "Reset"
+      },
+      "stats": {
+        "totalUsers": "Users",
+        "totalReferrers": "Referrers",
+        "totalCampaigns": "Campaigns",
+        "subscriptionRevenue": "Subscription revenue",
+        "totalEarnings": "Ref. earnings"
+      },
+      "legend": {
+        "title": "Legend",
+        "fillTitle": "Subscription",
+        "borderTitle": "Referral role",
+        "regularUser": "No subscription",
+        "activeReferrer": "Active referrer",
+        "partner": "Partner",
+        "topReferrer": "Top referrer (10+)",
+        "campaignUser": "From campaign",
+        "partnerCampaignEdge": "Partner → Campaign",
+        "campaignNode": "Ad campaign",
+        "paidActive": "Paid subscription",
+        "trialActive": "Trial",
+        "paidExpired": "Paid expired",
+        "trialExpired": "Trial expired"
+      },
+      "user": {
+        "tgId": "TG ID",
+        "email": "Email",
+        "partner": "Partner",
+        "subscription": "Subscription",
+        "validUntil": "until {{date}}",
+        "noSubscription": "No subscription",
+        "personalStats": "Personal statistics",
+        "totalSpent": "Total spent",
+        "referralEarnings": "Referral earnings",
+        "referralBranch": "Referral branch",
+        "directReferrals": "Direct referrals",
+        "branchSize": "Total in branch",
+        "branchRevenue": "Branch revenue",
+        "source": "Source",
+        "referredBy": "Referred by",
+        "fromCampaign": "Campaign",
+        "organic": "Organic",
+        "subscriptionStatus": {
+          "trial_active": "Trial",
+          "paid_active": "Paid",
+          "trial_expired": "Trial expired",
+          "paid_expired": "Paid expired"
+        }
+      },
+      "campaign": {
+        "startParam": "Parameter",
+        "active": "Active",
+        "inactive": "Inactive",
+        "directUsers": "Direct",
+        "totalNetwork": "Total network",
+        "totalRevenue": "Total revenue",
+        "conversionRate": "Conversion",
+        "avgCheck": "Avg check",
+        "topReferrers": "Top referrers from campaign"
+      },
+      "controls": {
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "resetZoom": "Reset zoom",
+        "fullscreen": "Fullscreen"
+      },
+      "scope": {
+        "title": "Scope",
+        "campaign": "Campaign",
+        "partner": "Partner",
+        "user": "User",
+        "searchPlaceholder": "Search...",
+        "selectCampaign": "Select campaign",
+        "selectPartner": "Select partner",
+        "selectUser": "Search user",
+        "emptyState": "Select a campaign, partner, or user to view their network",
+        "users": "users",
+        "campaigns": "campaigns",
+        "active": "Active",
+        "inactive": "Inactive",
+        "noResults": "Nothing found",
+        "removeItem": "Remove {{label}}",
+        "clearAll": "Clear all selections",
+        "addScope": "Add scope",
+        "maxReached": "Maximum {{max}} items"
+      },
+      "loading": "Loading graph...",
+      "error": "Failed to load network data",
+      "empty": "No data to display"
     },
     "trafficUsage": {
       "title": "Traffic Usage",
@@ -811,7 +1349,7 @@
       "total": "Total",
       "noData": "No traffic data",
       "loading": "Loading traffic data...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "Search by name or username",
       "allTariffs": "All tariffs",
       "nodes": "Nodes",
@@ -861,18 +1399,40 @@
       "previewNotAvailable": "Preview not available"
     },
     "payments": {
-      "title": "Payment verification",
-      "description": "Pending payments in the last 24 hours",
+      "title": "Payments",
+      "description": "Search and manage payments",
+      "searchPlaceholder": "Search: invoice, TG ID, @username, email...",
+      "searchHint": "Examples: SP-78291, @username, 123456789, user@mail.ru",
+      "searchResults": "Results for: {{query}} — found {{count}}",
+      "resetSearch": "Reset",
+      "statusAll": "All",
+      "statusPending": "Pending",
+      "statusPaid": "Paid",
+      "statusCancelled": "Cancelled",
+      "period24h": "24h",
+      "period7d": "7d",
+      "period30d": "30d",
+      "periodAll": "All",
+      "periodCustom": "Range",
+      "dateFrom": "From",
+      "dateTo": "To",
+      "applyDate": "Apply",
+      "allMethods": "All methods",
+      "totalCount": "Total",
+      "pendingCount": "Pending",
+      "paidCount": "Paid",
+      "cancelledCount": "Cancelled",
       "totalPending": "Total pending",
       "filterByMethod": "Filter by method",
-      "noPayments": "No pending payments",
+      "noPayments": "No payments found",
       "paid": "Paid",
       "user": "User",
       "openLink": "Open link",
       "checkStatus": "Check status",
       "checking": "Checking...",
-      "prev": "Previous",
-      "next": "Next"
+      "prev": "Prev",
+      "next": "Next",
+      "checkError": "Status check failed"
     },
     "paymentMethods": {
       "title": "Payment Methods",
@@ -1110,6 +1670,8 @@
       "total": "Total",
       "sent": "Sent",
       "failed": "Failed",
+      "blocked": "Blocked",
+      "blockedShort": "blocked",
       "filter": "Filter",
       "message": "Message",
       "unknownAdmin": "Unknown",
@@ -1157,7 +1719,14 @@
       "enableEmail": "Email",
       "sendingBoth": "2 broadcasts will be created",
       "bothCreated": "Broadcasts created",
-      "atLeastOneChannel": "Select at least one channel"
+      "atLeastOneChannel": "Select at least one channel",
+      "customButtons": "Custom buttons",
+      "addCustomButton": "Add button",
+      "customButtonLabelPlaceholder": "Button text",
+      "customButtonTypeCallback": "Callback",
+      "customButtonTypeUrl": "URL",
+      "customButtonCallbackPlaceholder": "callback_data (e.g. back_to_menu)",
+      "customButtonUrlPlaceholder": "https://example.com"
     },
     "pinnedMessages": {
       "title": "Pinned Messages",
@@ -1200,6 +1769,46 @@
       "unpinnedCount": "Unpinned",
       "editMessage": "Edit",
       "cantDeleteActive": "Cannot delete active message"
+    },
+    "channelSubscriptions": {
+      "title": "Required Channels",
+      "subtitle": "Users must subscribe to these channels",
+      "addChannel": "Add Channel",
+      "empty": "No channels configured",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "enable": "Enable",
+      "disable": "Disable",
+      "edit": "Edit",
+      "editing": "Editing",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this channel?",
+      "sortOrder": "Order",
+      "form": {
+        "title": "Display Name",
+        "channelId": "Channel ID",
+        "channelIdHint": "-100XXXXXXXXXX",
+        "channelLink": "Channel Link",
+        "channelLinkHint": "https://t.me/channel",
+        "submit": "Add",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "globalSettings": {
+        "title": "Channel Settings",
+        "channelRequired": "Require subscription",
+        "channelRequiredDesc": "Users must subscribe to channels to use the bot",
+        "disableTrialOnUnsub": "Disable trial on unsubscribe",
+        "disableTrialOnUnsubDesc": "Revoke trial access when user unsubscribes from any channel",
+        "requiredForAll": "Required for all users",
+        "requiredForAllDesc": "Apply channel subscription check to all users, including paid"
+      },
+      "perChannel": {
+        "disableTrial": "Disable trial on leave",
+        "disableTrialDesc": "Revoke trial when user leaves this channel",
+        "disablePaid": "Disable paid on leave",
+        "disablePaidDesc": "Revoke paid access when user leaves this channel"
+      }
     },
     "settings": {
       "title": "System Settings",
@@ -1267,6 +1876,8 @@
       "darkTheme": "Dark theme",
       "emailAuth": "Email auth",
       "emailAuthDesc": "Allow login via email",
+      "giftEnabled": "Gift subscription",
+      "giftEnabledDesc": "Allow users to gift a subscription to another user",
       "favoritesEmpty": "No favorites yet",
       "favoritesHint": "Star settings to add them here",
       "interfaceOptions": "Interface options",
@@ -1276,7 +1887,20 @@
       "projectName": "Project name",
       "quickPresets": "Quick presets",
       "resetAllColors": "Reset all colors",
-      "statusColors": "Status colors"
+      "statusColors": "Status colors",
+      "categories": {
+        "TELEGRAM_WIDGET": "Telegram Login Widget",
+        "TELEGRAM_OIDC": "Telegram Login (OIDC)"
+      },
+      "settingNames": {
+        "Telegram Widget Size": "Widget Size",
+        "Telegram Widget Radius": "Corner Radius",
+        "Telegram Widget Userpic": "Show User Photo",
+        "Telegram Widget Request Access": "Request Access",
+        "telegramOidcEnabled": "OIDC Enabled",
+        "telegramOidcClientId": "Client ID (Bot ID)",
+        "telegramOidcClientSecret": "Client Secret"
+      }
     },
     "theme": {
       "accentColor": "Accent color",
@@ -1304,7 +1928,8 @@
         "referral": "Referrals",
         "support": "Support",
         "info": "Info",
-        "admin": "Admin Panel"
+        "admin": "Admin Panel",
+        "language": "Language"
       },
       "descriptions": {
         "home": "Personal cabinet button",
@@ -1313,7 +1938,8 @@
         "referral": "Referral program",
         "support": "Support tickets",
         "info": "Information section",
-        "admin": "Web admin panel"
+        "admin": "Web admin panel",
+        "language": "Language selection"
       },
       "styles": {
         "default": "No color",
@@ -1321,6 +1947,26 @@
         "success": "Green",
         "danger": "Red"
       }
+    },
+    "menuEditor": {
+      "dragHint": "Drag rows to reorder them",
+      "dragToReorder": "Drag to reorder",
+      "row": "Row",
+      "addRow": "Add row",
+      "addButton": "Add button",
+      "addUrlButton": "URL button (link)",
+      "builtinButtons": "Built-in buttons",
+      "resetConfirm": "Reset menu layout to defaults?",
+      "buttonTextPlaceholder": "Custom button text",
+      "customLabelsHint": "Empty = default label",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "openIn": "Open in",
+      "openMode": {
+        "external": "External browser",
+        "webapp": "Telegram miniapp"
+      },
+      "invalidUrl": "Please provide a valid URL (http:// or https://) for all custom buttons"
     },
     "apps": {
       "title": "App Management",
@@ -1390,6 +2036,12 @@
       "adminLabel": "Admin",
       "replyPlaceholder": "Type your reply...",
       "sendReply": "Send Reply",
+      "attachMedia": "Attach media",
+      "invalidFileType": "Invalid file type. Use images, videos (MP4, WebM) or documents (PDF, DOC, TXT, ZIP).",
+      "fileTooLarge": "File is too large. Maximum size is 10MB.",
+      "uploadFailed": "Failed to upload file",
+      "uploading": "Uploading...",
+      "uploadComplete": "Uploaded",
       "settings": "Settings",
       "settingsSubtitle": "Configure ticket system and SLA",
       "settingsLoadError": "Failed to load settings",
@@ -1500,11 +2152,15 @@
       "periodsTabHint": "Add periods and prices for the tariff. Users will be able to choose from the added periods.",
       "addPeriodTitle": "Add period",
       "daysLabel": "Days",
-      "priceLabel": "Price (\u20bd)",
+      "priceLabel": "Price (₽)",
       "addButton": "Add",
       "noPeriodsHint": "No added periods. Add at least one period.",
       "daysShort": "d.",
       "serversTitle": "Servers",
+      "externalSquadTitle": "External Squad",
+      "externalSquadHint": "Assign a RemnaWave external squad for users on this tariff. When a subscription is created, the user will be automatically added to the selected squad.",
+      "noExternalSquad": "No external squad",
+      "externalSquadUsers": "users",
       "serversTabHint": "Select servers available on this tariff.",
       "noServersAvailable": "No servers available",
       "promoGroupsTitle": "Promo Groups",
@@ -1550,13 +2206,16 @@
       "dailyType": "Daily",
       "periodType": "Period-based",
       "dailyPriceLabel": "Price per day",
-      "currencyPerDay": "\u20bd/day",
+      "currencyPerDay": "₽/day",
       "dailyDeductionDesc": "Charged daily from user's balance",
       "dailyPriceRequired": "Enter a price per day greater than 0",
       "cannotSave": "Cannot save tariff:",
       "statusTitle": "Tariff Status",
       "isActiveLabel": "Active",
       "isActiveHint": "Inactive tariffs are not shown to users",
+      "showInGiftLabel": "Show in gifts",
+      "showInGiftHint": "Tariff will be available for purchase in the gifts section",
+      "giftBadge": "Gift",
       "isTrialLabel": "Trial tariff",
       "isTrialHint": "Available for free trial period",
       "validation": {
@@ -1609,6 +2268,7 @@
       "subtitle": "Manage advertising links",
       "createButton": "Create",
       "noData": "No ad campaigns",
+      "loadMore": "Load more",
       "bonusType": {
         "balance": "Balance",
         "subscription": "Subscription",
@@ -1659,7 +2319,11 @@
         "active": "Active",
         "cancel": "Cancel",
         "save": "Save",
-        "saving": "Saving..."
+        "saving": "Saving...",
+        "partner": "Partner",
+        "noPartner": "No partner",
+        "selectPartner": "Select partner",
+        "partnerAutoAssign": "Campaign will be automatically assigned to partner {{name}}"
       },
       "stats": {
         "title": "Campaign Statistics",
@@ -1684,10 +2348,20 @@
         "inactive": "Inactive",
         "copy": "Copy",
         "copied": "Copied!",
+        "botLink": "Bot link",
+        "webLink": "Web link",
         "users": "Users",
         "noUsers": "No registered users",
         "paid": "Paid",
-        "hasSub": "Has sub"
+        "hasSub": "Has sub",
+        "dailyChart": "30-day trends",
+        "chartRegistrations": "Registrations",
+        "chartRevenue": "Revenue",
+        "totalDeposits": "Total Deposits",
+        "totalSpending": "Subscription Spending",
+        "periodComparison": "Period comparison",
+        "vsLastWeek": "vs last week",
+        "topRegistrations": "Top registrations"
       },
       "users": {
         "title": "Campaign Users",
@@ -1712,6 +2386,191 @@
       },
       "loadError": "Failed to load campaign",
       "updateError": "Failed to save changes"
+    },
+    "withdrawals": {
+      "title": "Withdrawals",
+      "subtitle": "Manage withdrawal requests",
+      "noData": "No withdrawal requests",
+      "risk": "Risk:",
+      "overview": {
+        "pendingCount": "Pending",
+        "pendingAmount": "Pending amount",
+        "approvedCount": "Approved",
+        "completedCount": "Completed"
+      },
+      "filter": {
+        "all": "All",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "unknown": "Unknown"
+      },
+      "detail": {
+        "title": "Withdrawal",
+        "loadError": "Failed to load withdrawal details",
+        "userInfo": "User Information",
+        "username": "Username",
+        "telegramId": "Telegram ID",
+        "balance": "Balance",
+        "totalReferrals": "Total referrals",
+        "totalEarnings": "Total earnings",
+        "requestedAmount": "Requested Amount",
+        "createdAt": "Created",
+        "paymentDetails": "Payment Details",
+        "noPaymentDetails": "No payment details provided",
+        "riskAnalysis": "Risk Analysis",
+        "riskScore": "Risk score",
+        "riskLevel": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High",
+          "critical": "Critical"
+        },
+        "flags": "Flags",
+        "balanceStats": "Balance Statistics",
+        "referralDeposits": "Referral Deposits",
+        "suspiciousReferrals": "Suspicious Referrals",
+        "earningsByReason": "Earnings by Reason",
+        "adminComment": "Admin Comment",
+        "processedAt": "Processed at",
+        "approve": "Approve",
+        "approving": "Approving...",
+        "reject": "Reject",
+        "rejecting": "Rejecting...",
+        "complete": "Mark as Completed",
+        "completing": "Completing...",
+        "rejectTitle": "Reject withdrawal?",
+        "rejectDescription": "Optionally add a comment explaining the reason for rejection.",
+        "commentPlaceholder": "Reason for rejection (optional)...",
+        "confirmReject": "Confirm Rejection"
+      }
+    },
+    "partners": {
+      "title": "Partners",
+      "subtitle": "Partner management and applications",
+      "totalPartners": "Total partners",
+      "pendingApplications": "Pending applications",
+      "totalReferrals": "Total referrals",
+      "totalEarnings": "Total earnings",
+      "tabs": {
+        "partners": "Partners",
+        "applications": "Applications"
+      },
+      "noPartners": "No partners yet",
+      "noApplications": "No pending applications",
+      "commission": "{{percent}}% commission",
+      "referrals": "{{count}} referrals",
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "review": "Review"
+      },
+      "applicationFields": {
+        "companyName": "Company",
+        "website": "Website",
+        "channel": "Channel",
+        "description": "Description",
+        "expectedReferrals": "Expected referrals/mo",
+        "desiredCommission": "Desired commission"
+      },
+      "approveDialog": {
+        "title": "Approve Application",
+        "description": "Approve partner application from {{name}}",
+        "commissionLabel": "Commission (%)"
+      },
+      "rejectDialog": {
+        "title": "Reject Application",
+        "description": "Reject partner application from {{name}}",
+        "commentLabel": "Comment (optional)",
+        "commentPlaceholder": "Reason for rejection..."
+      },
+      "settings": "Settings",
+      "settingsSubtitle": "Partner program and withdrawal settings",
+      "settingsLoadError": "Failed to load settings",
+      "settingsUpdateError": "Failed to save settings",
+      "settingsSection": {
+        "referralProgram": "Referral Program",
+        "withdrawalSettings": "Withdrawal Settings"
+      },
+      "settingsFields": {
+        "programEnabled": "Referral program enabled",
+        "programEnabledDesc": "Enable/disable referral program for all users",
+        "partnerVisible": "Partner section visible in cabinet",
+        "partnerVisibleDesc": "Show/hide partner application and withdrawal sections for users",
+        "withdrawalEnabled": "Withdrawal enabled",
+        "withdrawalEnabledDesc": "Allow partners to request withdrawal of referral balance",
+        "minAmount": "Min. withdrawal amount (kopeks)",
+        "minAmountDesc": "Minimum amount for a withdrawal request (100 kopeks = 1 ₽)",
+        "cooldownDays": "Cooldown between withdrawals (days)",
+        "cooldownDaysDesc": "How many days must pass between withdrawal requests",
+        "requisitesText": "Requisites field prompt",
+        "requisitesTextDesc": "Custom text shown to users to describe what payment details to provide",
+        "requisitesTextPlaceholder": "E.g.: Provide your bank card number or USDT TRC-20 address"
+      }
+    },
+    "partnerDetail": {
+      "title": "Partner Details",
+      "loadError": "Failed to load partner details",
+      "status": {
+        "approved": "Active",
+        "pending": "Pending",
+        "rejected": "Rejected",
+        "none": "Not a partner"
+      },
+      "stats": {
+        "totalReferrals": "Total referrals",
+        "paidReferrals": "Paid referrals",
+        "activeReferrals": "Active referrals",
+        "conversionRate": "Conversion"
+      },
+      "earnings": {
+        "title": "Earnings",
+        "allTime": "All time",
+        "today": "Today",
+        "week": "This week",
+        "month": "This month"
+      },
+      "commission": {
+        "title": "Commission",
+        "update": "Update"
+      },
+      "campaigns": {
+        "title": "Assigned Campaigns",
+        "noCampaigns": "No campaigns assigned",
+        "active": "Active",
+        "inactive": "Inactive",
+        "assign": "Assign",
+        "unassign": "Unassign",
+        "createNew": "Create",
+        "assignTitle": "Assign Campaign",
+        "noAvailable": "No available campaigns to assign",
+        "createTitle": "Create Campaign",
+        "createSubtitle": "Campaign will be auto-assigned to the partner",
+        "autoAssignNote": "Campaign will be automatically assigned to partner {{name}}",
+        "createAndAssign": "Create & Assign"
+      },
+      "dangerZone": {
+        "title": "Danger Zone",
+        "revokeButton": "Revoke Partner Status"
+      },
+      "commissionDialog": {
+        "title": "Update Commission",
+        "description": "Set a new commission percentage for this partner.",
+        "label": "Commission (%)"
+      },
+      "revokeDialog": {
+        "title": "Revoke Partner Status?",
+        "description": "This will remove partner privileges. The partner will no longer earn commissions from referrals."
+      }
     },
     "promocodes": {
       "title": "Promo Codes",
@@ -1879,6 +2738,7 @@
       "form": {
         "name": "Group name",
         "namePlaceholder": "VIP customers",
+        "nameRequired": "Enter group name",
         "categoryDiscounts": "Category discounts",
         "periodDiscounts": "Period discounts",
         "add": "Add",
@@ -1890,6 +2750,7 @@
         "rub": "rub.",
         "autoAssignHint": "0 = don't auto-assign",
         "applyToAddons": "Apply to additional services",
+        "isDefault": "Default group",
         "cancel": "Cancel",
         "saving": "Saving...",
         "save": "Save"
@@ -1973,7 +2834,8 @@
           "subscription": "Subscription",
           "balance": "Balance",
           "sync": "Synchronization",
-          "tickets": "Tickets"
+          "tickets": "Tickets",
+          "gifts": "Gifts"
         },
         "noTickets": "No tickets from this user",
         "ticketsCount": "tickets",
@@ -2052,6 +2914,7 @@
           "devices": "Devices",
           "actions": "Actions",
           "extend": "Extend",
+          "shorten": "Deduct days",
           "changeTariff": "Change tariff",
           "cancel": "Cancel",
           "activate": "Activate",
@@ -2070,7 +2933,8 @@
           "trafficAdded": "Traffic package added",
           "expired": "expired",
           "daysLeft": "d left",
-          "deviceLimitUpdated": "Device limit updated"
+          "deviceLimitUpdated": "Device limit updated",
+          "invalidDays": "Please enter a valid number of days (greater than 0)"
         },
         "balance": {
           "current": "Current balance",
@@ -2095,6 +2959,41 @@
           "notLinked": "Not linked",
           "fromPanel": "From panel to bot",
           "toPanel": "From bot to panel"
+        },
+        "gifts": {
+          "title": "User Gifts",
+          "sentTitle": "Sent Gifts",
+          "receivedTitle": "Received Gifts",
+          "noSent": "No gifts sent by this user",
+          "noReceived": "No gifts received by this user",
+          "noGifts": "No gifts",
+          "token": "Code",
+          "tariff": "Tariff",
+          "period": "Period",
+          "devices": "Devices",
+          "amount": "Amount",
+          "paymentMethod": "Payment method",
+          "recipient": "Recipient",
+          "sender": "Sender",
+          "message": "Message",
+          "createdAt": "Created",
+          "paidAt": "Paid",
+          "deliveredAt": "Activated",
+          "status": {
+            "pending": "Pending",
+            "paid": "Paid",
+            "delivered": "Delivered",
+            "pending_activation": "Pending activation",
+            "failed": "Failed",
+            "expired": "Expired"
+          },
+          "days": "d",
+          "codeOnly": "Code only",
+          "via": "via",
+          "balance": "balance",
+          "unknownUser": "Unknown",
+          "totalSent": "Total sent",
+          "totalReceived": "Total received"
         }
       }
     },
@@ -2198,6 +3097,461 @@
         "extendDiscountDesc": "Discount for current subscribers",
         "purchaseDiscount": "Purchase discount",
         "purchaseDiscountDesc": "Discount for new users"
+      }
+    },
+    "roles": {
+      "title": "Roles & Permissions",
+      "subtitle": "Manage admin roles and their permissions",
+      "createRole": "Create Role",
+      "noRoles": "No roles found",
+      "systemBadge": "System",
+      "inactiveBadge": "Inactive",
+      "levelLabel": "Level",
+      "usersCount_one": "{{count}} user",
+      "usersCount_other": "{{count}} users",
+      "permissionsCount_one": "{{count}} permission",
+      "permissionsCount_other": "{{count}} permissions",
+      "stats": {
+        "totalRoles": "Total roles",
+        "active": "Active",
+        "system": "System"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "modal": {
+        "createTitle": "Create Role",
+        "editTitle": "Edit Role",
+        "close": "Close"
+      },
+      "form": {
+        "name": "Role name",
+        "namePlaceholder": "e.g. Moderator",
+        "description": "Description",
+        "descriptionPlaceholder": "What this role is for...",
+        "level": "Priority level",
+        "levelValue": "Level value",
+        "levelHint": "Higher level = more authority. Users can only manage roles with a lower level than their own.",
+        "color": "Color",
+        "presets": "Permission presets",
+        "permissions": "Permissions",
+        "permissionSections": {
+          "users": "Users",
+          "tickets": "Tickets",
+          "stats": "Statistics",
+          "sales_stats": "Sales statistics",
+          "broadcasts": "Broadcasts",
+          "tariffs": "Tariffs",
+          "promocodes": "Promo codes",
+          "promo_groups": "Promo groups",
+          "promo_offers": "Promo offers",
+          "campaigns": "Campaigns",
+          "partners": "Partners",
+          "withdrawals": "Withdrawals",
+          "payments": "Payments",
+          "payment_methods": "Payment methods",
+          "servers": "Servers",
+          "remnawave": "Remnawave",
+          "traffic": "Traffic",
+          "settings": "Settings",
+          "roles": "Roles",
+          "audit_log": "Audit log",
+          "channels": "Channels",
+          "ban_system": "Ban system",
+          "wheel": "Lucky wheel",
+          "apps": "Apps",
+          "email_templates": "Email templates",
+          "pinned_messages": "Pinned messages",
+          "landings": "Landing pages",
+          "updates": "Updates"
+        },
+        "permissionActions": {
+          "read": "Read",
+          "edit": "Edit",
+          "create": "Create",
+          "delete": "Delete",
+          "block": "Block",
+          "sync": "Sync",
+          "reply": "Reply",
+          "close": "Close",
+          "settings": "Settings",
+          "export": "Export",
+          "send": "Send",
+          "stats": "Stats",
+          "approve": "Approve",
+          "revoke": "Revoke",
+          "reject": "Reject",
+          "manage": "Manage",
+          "ban": "Ban",
+          "unban": "Unban",
+          "assign": "Assign",
+          "promo_group": "Promo group",
+          "balance": "Balance",
+          "subscription": "Subscription",
+          "send_offer": "Send offer",
+          "referral": "Referral %"
+        },
+        "toggleSection": "Toggle all {{section}} permissions",
+        "selectedPermissions_one": "{{count}} permission selected",
+        "selectedPermissions_other": "{{count}} permissions selected",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save"
+      },
+      "presets": {
+        "moderator": "Moderator",
+        "marketer": "Marketer",
+        "support": "Support"
+      },
+      "confirm": {
+        "title": "Delete role?",
+        "text": "This role will be permanently deleted. Users with this role will lose its permissions.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleting": "Deleting..."
+      },
+      "errors": {
+        "loadFailed": "Failed to load roles",
+        "createFailed": "Failed to create role",
+        "updateFailed": "Failed to update role",
+        "nameRequired": "Role name is required",
+        "deleteFailed": "Failed to delete role"
+      }
+    },
+    "roleAssign": {
+      "title": "Role Assignment",
+      "subtitle": "Assign and manage user roles",
+      "assignSection": "Assign Role",
+      "userLabel": "User",
+      "searchPlaceholder": "Search by name, username, Telegram ID, or email...",
+      "clearUser": "Clear selected user",
+      "noUsersFound": "No users found",
+      "roleLabel": "Role",
+      "selectRole": "Select a role...",
+      "expiresLabel": "Expires at (optional)",
+      "expiresHint": "Leave empty for permanent assignment",
+      "assignButton": "Assign",
+      "assigning": "Assigning...",
+      "assignSuccess": "Role assigned successfully",
+      "currentAssignments": "Current Assignments",
+      "totalAssignments_one": "{{count}} assignment total",
+      "totalAssignments_other": "{{count}} assignments total",
+      "noAssignments": "No role assignments found",
+      "unknownUser": "Unknown user",
+      "system": "System",
+      "permanent": "Permanent",
+      "expired": "expired",
+      "envManaged": "Managed via ADMIN_IDS / ADMIN_EMAILS in env",
+      "revoke": "Revoke",
+      "revokeAriaLabel": "Revoke role {{role}} from {{user}}",
+      "table": {
+        "user": "User",
+        "role": "Role",
+        "assignedBy": "Assigned by",
+        "assignedAt": "Assigned at",
+        "expires": "Expires",
+        "actions": "Actions"
+      },
+      "pagination": {
+        "showing": "{{from}}-{{to}} of {{total}}",
+        "prev": "Previous page",
+        "next": "Next page"
+      },
+      "confirm": {
+        "title": "Revoke role?",
+        "text": "This user will immediately lose all permissions associated with this role.",
+        "cancel": "Cancel",
+        "revoke": "Revoke",
+        "revoking": "Revoking..."
+      },
+      "errors": {
+        "userRequired": "Please select a user",
+        "roleRequired": "Please select a role",
+        "assignFailed": "Failed to assign role",
+        "revokeFailed": "Failed to revoke role"
+      }
+    },
+    "policies": {
+      "title": "Access Policies",
+      "subtitle": "Manage ABAC access control policies",
+      "createPolicy": "Create Policy",
+      "noPolicies": "No policies found",
+      "inactiveBadge": "Inactive",
+      "effectAllow": "Allow",
+      "effectDeny": "Deny",
+      "global": "Global",
+      "unknownRole": "Unknown role",
+      "roleLabel": "Role",
+      "priorityLabel": "Priority",
+      "stats": {
+        "total": "Total policies",
+        "allow": "Allow",
+        "deny": "Deny",
+        "active": "Active"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "modal": {
+        "createTitle": "Create Policy",
+        "editTitle": "Edit Policy",
+        "close": "Close"
+      },
+      "form": {
+        "name": "Policy name",
+        "namePlaceholder": "e.g. Block night access",
+        "description": "Description",
+        "descriptionPlaceholder": "What this policy does...",
+        "effect": "Effect",
+        "resource": "Resource",
+        "selectResource": "Select a resource...",
+        "actions": "Actions",
+        "role": "Role (optional)",
+        "globalOption": "Global (all roles)",
+        "roleHint": "Leave as Global to apply the policy to all roles.",
+        "priority": "Priority",
+        "priorityHint": "Higher priority policies are evaluated first. Deny overrides Allow at equal priority.",
+        "conditions": "Conditions",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save"
+      },
+      "conditions": {
+        "timeRange": "Time range",
+        "timeStart": "Start time",
+        "timeEnd": "End time",
+        "ipWhitelist": "IP whitelist",
+        "ipPlaceholder": "Enter IP and press Enter...",
+        "removeIp": "Remove {{ip}}",
+        "ipCount_one": "{{count}} IP",
+        "ipCount_other": "{{count}} IPs",
+        "rateLimit": "Rate limit",
+        "rateLimitValue": "Rate limit value",
+        "rateValue": "{{count}}/hr",
+        "perHour": "actions per hour",
+        "weekdays": "Days of week",
+        "day0": "Sun",
+        "day1": "Mon",
+        "day2": "Tue",
+        "day3": "Wed",
+        "day4": "Thu",
+        "day5": "Fri",
+        "day6": "Sat"
+      },
+      "confirm": {
+        "title": "Delete policy?",
+        "text": "This policy will be permanently deleted. Access control rules will be recalculated.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleting": "Deleting..."
+      },
+      "errors": {
+        "loadFailed": "Failed to load policies",
+        "createFailed": "Failed to create policy",
+        "updateFailed": "Failed to update policy",
+        "nameRequired": "Policy name is required",
+        "resourceRequired": "Please select a resource",
+        "actionsRequired": "Please select at least one action",
+        "deleteFailed": "Failed to delete policy"
+      }
+    },
+    "auditLog": {
+      "title": "Audit Log",
+      "subtitle": "Review system activity and access history",
+      "back": "Back",
+      "exportCsv": "Export CSV",
+      "exportError": "Failed to export",
+      "exporting": "Exporting...",
+      "refresh": "Refresh",
+      "unknownUser": "Unknown user",
+      "noEntries": "No audit log entries found",
+      "totalEntries_one": "{{count}} entry",
+      "totalEntries_other": "{{count}} entries",
+      "autoRefresh": {
+        "label": "Auto-refresh",
+        "tooltip": "Auto-refresh every 30 seconds"
+      },
+      "filters": {
+        "title": "Filters",
+        "active": "Active",
+        "user": "User",
+        "action": "Action",
+        "actionPlaceholder": "Search by action...",
+        "resource": "Resource type",
+        "allResources": "All resources",
+        "status": "Status",
+        "allStatuses": "All statuses",
+        "dateFrom": "Date from",
+        "dateTo": "Date to",
+        "apply": "Apply",
+        "clear": "Clear"
+      },
+      "status": {
+        "success": "Success",
+        "denied": "Denied",
+        "error": "Error"
+      },
+      "resourceTypes": {
+        "users": "Users",
+        "tickets": "Tickets",
+        "roles": "Roles",
+        "policies": "Policies",
+        "settings": "Settings",
+        "broadcasts": "Broadcasts",
+        "tariffs": "Tariffs",
+        "servers": "Servers",
+        "payments": "Payments",
+        "campaigns": "Campaigns",
+        "promocodes": "Promo Codes"
+      },
+      "details": {
+        "userAgent": "User Agent",
+        "requestPath": "Request Path",
+        "ipAddress": "IP Address",
+        "timestamp": "Timestamp",
+        "before": "Before",
+        "after": "After",
+        "queryParams": "Query Parameters",
+        "requestBody": "Request Body",
+        "fullDetails": "Full Details"
+      },
+      "time": {
+        "justNow": "Just now",
+        "minutesAgo_one": "{{count}} min ago",
+        "minutesAgo_other": "{{count}} min ago",
+        "hoursAgo_one": "{{count}} hr ago",
+        "hoursAgo_other": "{{count}} hrs ago",
+        "daysAgo_one": "{{count}} day ago",
+        "daysAgo_other": "{{count}} days ago"
+      },
+      "pagination": {
+        "pageSize": "Per page:",
+        "pageOf": "{{current}} / {{total}}",
+        "first": "First page",
+        "previous": "Previous page",
+        "next": "Next page",
+        "last": "Last page"
+      },
+      "errors": {
+        "loadFailed": "Failed to load audit log",
+        "retry": "Try again"
+      }
+    },
+    "landings": {
+      "title": "Landing Pages",
+      "create": "Create Landing",
+      "edit": "Edit",
+      "slug": "URL Identifier",
+      "slugHint": "Lowercase, numbers and hyphens",
+      "pageTitle": "Title",
+      "subtitle": "Subtitle",
+      "footerText": "Footer (HTML)",
+      "features": "Features",
+      "addFeature": "Add",
+      "featureIcon": "Icon",
+      "featureTitle": "Title",
+      "featureDesc": "Description",
+      "tariffs": "Plans",
+      "selectTariffs": "Select plans",
+      "periods": "Periods",
+      "paymentMethods": "Payment Methods",
+      "addMethod": "Add method",
+      "methodId": "Method ID",
+      "methodName": "Name",
+      "methodDesc": "Description",
+      "methodIcon": "Icon URL",
+      "gifts": "Gifts",
+      "giftEnabled": "Gift purchases",
+      "customCss": "CSS",
+      "seo": "SEO",
+      "metaTitle": "Meta Title",
+      "metaDesc": "Meta Description",
+      "active": "Active",
+      "inactive": "Inactive",
+      "purchaseCount": "purchases",
+      "copyUrl": "Copy URL",
+      "urlCopied": "URL copied",
+      "deleteConfirm": "Delete landing \"{{title}}\"?",
+      "created": "Landing created",
+      "updated": "Landing updated",
+      "deleted": "Landing deleted",
+      "saveOrder": "Save order",
+      "orderSaved": "Order saved",
+      "general": "General",
+      "content": "Content",
+      "save": "Save",
+      "back": "Back",
+      "invalidSlug": "Slug can only contain lowercase letters, numbers, and hyphens",
+      "titleRequired": "Title is required",
+      "noTariffs": "Select at least one tariff",
+      "noPaymentMethods": "Add at least one payment method",
+      "selectMethods": "Select available methods",
+      "noSystemMethods": "No payment methods configured in the system",
+      "methodOrder": "Drag to reorder",
+      "methodSubOptions": "Payment sub-options",
+      "loadingPeriods": "Loading...",
+      "periodDaySuffix": "d",
+      "localeTab": "Language",
+      "localeHint": "Switch language to edit text in that language",
+      "discount": "Discount",
+      "discountEnabled": "Enable discount",
+      "discountPercent": "Discount %",
+      "discountStartsAt": "Start date",
+      "discountEndsAt": "End date",
+      "discountBadge": "Banner text (optional)",
+      "discountBadgePlaceholder": "e.g. Spring sale!",
+      "discountOverrides": "Per-tariff overrides",
+      "discountOverridesHint": "Leave empty to use global discount",
+      "discountPreview": "Preview",
+      "discountActive": "Discount",
+      "statistics": "Statistics",
+      "stats": {
+        "title": "Landing Statistics",
+        "totalPurchases": "Purchases",
+        "revenue": "Revenue",
+        "giftPurchases": "Gifts",
+        "regularPurchases": "Regular",
+        "conversionRate": "Conversion",
+        "avgPurchase": "Avg. Check",
+        "dailyChart": "Purchases & Revenue by Day",
+        "tariffChart": "Tariff Distribution",
+        "giftBreakdown": "Gifts vs Regular",
+        "purchases": "Purchases",
+        "revenueLabel": "Revenue",
+        "gifts": "Gifts",
+        "regular": "Regular",
+        "created": "Created",
+        "successful": "Successful",
+        "funnel": "Funnel",
+        "loadError": "Failed to load statistics",
+        "noPurchases": "No purchases"
+      },
+      "purchases": {
+        "title": "Purchases",
+        "contact": "Contact",
+        "recipient": "Recipient",
+        "tariff": "Tariff",
+        "period": "Period",
+        "days": "days",
+        "price": "Price",
+        "method": "Method",
+        "date": "Date",
+        "gift": "Gift",
+        "forSelf": "For self",
+        "allStatuses": "All statuses",
+        "status_pending": "Pending",
+        "status_paid": "Paid",
+        "status_delivered": "Delivered",
+        "status_pending_activation": "Pending activation",
+        "status_failed": "Failed",
+        "status_expired": "Expired",
+        "noPurchases": "No purchases",
+        "showing": "Showing {{from}}–{{to}} of {{total}}",
+        "page": "Page {{current}} of {{total}}",
+        "prev": "Previous",
+        "next": "Next"
       }
     }
   },
@@ -2617,6 +3971,7 @@
     "notVerified": "Not verified",
     "verificationRequired": "Please verify your email to use email login.",
     "resendVerification": "Resend Verification Email",
+    "resendIn": "Resend in {{seconds}} sec.",
     "verificationResent": "Verification email resent!",
     "canLoginWithEmail": "You can now log in using your email and password.",
     "emailAlreadyRegistered": "This email is already linked to another account. If this is your email, log in with it or contact support.",
@@ -2659,6 +4014,37 @@
       "promoOffers": "Promo Offers",
       "promoOffersDesc": "Receive special offers and discounts",
       "unavailable": "Notification settings unavailable"
+    },
+    "accounts": {
+      "title": "Connected Accounts",
+      "subtitle": "Manage your sign-in methods",
+      "linked": "Connected",
+      "notLinked": "Not connected",
+      "link": "Connect",
+      "unlink": "Disconnect",
+      "unlinkConfirm": "Are you sure? You won't be able to sign in with this service after disconnecting.",
+      "unlinkConfirmBtn": "Confirm disconnect?",
+      "cannotUnlinkLast": "Cannot disconnect the last sign-in method",
+      "linkSuccess": "Account connected successfully",
+      "unlinkSuccess": "Account disconnected successfully",
+      "linkError": "Failed to connect account",
+      "telegramLinkUnavailable": "Telegram linking is temporarily unavailable. Use the bot:",
+      "unlinkError": "Failed to disconnect account",
+      "goToAccounts": "Connected Accounts",
+      "linking": "Linking account...",
+      "linkingTelegram": "Connecting Telegram...",
+      "returnToTelegram": "Return to Telegram to continue",
+      "openTelegram": "Open Telegram",
+      "continueInBrowser": "Continue authorization in the opened browser",
+      "pollingTimeout": "Authorization check timed out. Refresh the page if you completed linking.",
+      "providers": {
+        "telegram": "Telegram",
+        "email": "Email",
+        "google": "Google",
+        "yandex": "Yandex",
+        "discord": "Discord",
+        "vk": "VK"
+      }
     }
   },
   "theme": {
@@ -2858,13 +4244,307 @@
       "waitSeconds": "Wait {{seconds}} sec.",
       "hint": "Click check button after subscribing",
       "notSubscribed": "You haven't subscribed to the channel yet",
-      "checkError": "Check failed. Please try again later."
+      "checkError": "Check failed. Please try again later.",
+      "subscribed": "Subscribed",
+      "channelsRequired": "Subscribe to all channels below to continue"
     },
     "blacklisted": {
       "title": "Access Denied",
       "defaultMessage": "Your account has been blocked.",
       "reason": "Reason",
       "contactSupport": "If you believe this is an error, please contact support."
+    }
+  },
+  "merge": {
+    "title": "Merge Accounts",
+    "description": "This sign-in method is already linked to another account. You can merge both accounts into one.",
+    "currentAccount": "Your current account",
+    "foundAccount": "Found account",
+    "authMethods": "Sign-in methods",
+    "subscription": "Subscription",
+    "noSubscription": "No subscription",
+    "traffic": "Traffic",
+    "devices": "Devices",
+    "balance": "Balance",
+    "until": "until {{date}}",
+    "keepThisSubscription": "Keep this subscription",
+    "chooseSubscription": "Choose which subscription to keep",
+    "afterMerge": "After merging",
+    "allAuthMethodsMerged": "All sign-in methods will be combined",
+    "balanceSummed": "Balance: {{amount}} ₽ (combined)",
+    "unselectedSubscriptionDeleted": "The unselected subscription will be deleted",
+    "historyPreserved": "Transaction history will be preserved",
+    "confirm": "Merge Accounts",
+    "cancel": "Cancel",
+    "expired": "The merge link has expired. Please try again.",
+    "success": "Accounts merged successfully!",
+    "error": "Failed to merge accounts. Please try again later.",
+    "expiresIn": "Expires in {{minutes}}",
+    "merging": "Merging..."
+  },
+  "landing": {
+    "notFound": "Page not found",
+    "forMe": "For me",
+    "asGift": "As a gift",
+    "contactLabel": "Your email or @username",
+    "yourContact": "Your email or @username",
+    "contactPlaceholder": "email@example.com or @username",
+    "contactHint": "Enter email or Telegram @username",
+    "recipientLabel": "Gift recipient",
+    "recipientPlaceholder": "Recipient email or @username",
+    "giftMessageLabel": "Greeting (optional)",
+    "giftMessagePlaceholder": "Write a greeting...",
+    "chooseTariff": "Choose a plan",
+    "devices": "devices",
+    "paymentMethod": "Payment method",
+    "processing": "Processing...",
+    "payButton": "Pay {{price}}",
+    "accessFor": "Access for {{period}}",
+    "purchaseError": "Failed to create payment",
+    "purchaseNotFound": "Purchase not found",
+    "awaitingPayment": "Awaiting payment",
+    "awaitingPaymentDesc": "Complete the payment in the opened window",
+    "purchaseSuccess": "Payment successful!",
+    "keySentTo": "Subscription key sent to {{contact}}",
+    "giftSentTo": "Gift sent to {{contact}}",
+    "purchaseFailed": "Payment failed",
+    "purchaseFailedDesc": "Payment was unsuccessful. Try again.",
+    "subscriptionLink": "Subscription link",
+    "daysAccess": "days of access",
+    "error": "Error",
+    "gb": "GB",
+    "selectedTariff": "Tariff",
+    "period": "Period",
+    "total": "Total",
+    "pay": "Pay",
+    "choosePeriod": "Choose period",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "copyLink": "Copy link",
+    "giftToggleLabel": "Purchase type",
+    "pollTimedOut": "Taking longer than expected",
+    "pollTimedOutDesc": "Payment processing is taking longer than usual. You can try checking again.",
+    "pendingActivation": "Subscription ready to activate",
+    "pendingActivationDesc": "You already have an active subscription. Activating will replace it.",
+    "activateNow": "Activate now",
+    "activating": "Activating...",
+    "activationFailed": "Activation failed",
+    "giftMessage": "Message",
+    "cabinetReady": "Your account is ready",
+    "cabinetEmail": "Email",
+    "cabinetPassword": "Password",
+    "goToCabinet": "Go to Cabinet",
+    "saveCredentials": "Save these login credentials",
+    "credentialsSentToEmail": "Login credentials sent to your email",
+    "giftSentSuccess": "Gift sent!",
+    "giftSentDesc": "Recipient will be notified by email",
+    "giftPendingActivationDesc": "The recipient already has an active subscription. They will receive a link to activate the gift.",
+    "giftTelegramSent": "Gift notification sent to recipient via Telegram",
+    "giftTelegramNotInBot": "Recipient hasn't started the bot yet. Send them this link:",
+    "giftTelegramPendingSent": "Activation request sent to recipient via Telegram",
+    "giftTelegramPendingNotInBot": "Recipient hasn't started the bot yet. Send them the bot link so they can activate the gift:",
+    "openBot": "Open bot",
+    "autoLoginFailed": "Auto-login failed",
+    "autoLoginProcessing": "Signing in...",
+    "discount": {
+      "days": "d",
+      "hours": "h",
+      "minutes": "m",
+      "seconds": "s"
+    },
+    "periodLabels": {
+      "d1": "1 day",
+      "d2": "2 days",
+      "d3": "3 days",
+      "d5": "5 days",
+      "d7": "1 week",
+      "d14": "2 weeks",
+      "d30": "1 month",
+      "d60": "2 months",
+      "d90": "3 months",
+      "d180": "6 months",
+      "d365": "1 year",
+      "d456": "1 year + 3 mo.",
+      "nDays_one": "{{count}} day",
+      "nDays_other": "{{count}} days",
+      "nMonths_one": "{{count}} month",
+      "nMonths_other": "{{count}} months"
+    }
+  },
+  "gift": {
+    "title": "Gift Subscription",
+    "subtitle": "Send a VPN subscription as a gift",
+    "choosePeriod": "Choose period",
+    "chooseTariff": "Choose tariff",
+    "recipient": "Recipient",
+    "recipientPlaceholder": "Email or @telegram",
+    "recipientHint": "Enter email or Telegram username",
+    "giftMessage": "Greeting",
+    "giftMessagePlaceholder": "Add a personal message (optional)",
+    "paymentMode": "Payment method",
+    "fromBalance": "From balance",
+    "viaGateway": "Via payment gateway",
+    "yourBalance": "Your balance",
+    "insufficientBalance": "Insufficient funds",
+    "topUpBalance": "Top up balance",
+    "total": "Total",
+    "giftButton": "Send Gift",
+    "sending": "Sending gift...",
+    "gb": "GB",
+    "devices": "devices",
+    "paymentMethod": "Payment method",
+    "processing": "Processing...",
+    "successTitle": "Gift sent!",
+    "successDesc": "Recipient {{contact}} will be notified",
+    "pendingTitle": "Awaiting payment",
+    "pendingDesc": "Complete the payment in the payment system",
+    "pendingActivationTitle": "Pending activation",
+    "pendingActivationDesc": "Recipient has an active subscription. Gift is pending activation.",
+    "failedTitle": "Error",
+    "failedDesc": "Failed to send gift. Please try again.",
+    "backToGift": "Go back",
+    "backToDashboard": "Back to dashboard",
+    "tryAgain": "Try again",
+    "pollTimeout": "Processing is taking longer than usual",
+    "pollTimeoutDesc": "Try checking the status later",
+    "pollErrorTitle": "Could not check gift status",
+    "pollErrorDesc": "Your purchase was successful. Check your dashboard for details.",
+    "retry": "Check again",
+    "notFound": "Gift configuration not found",
+    "noToken": "Invalid link",
+    "noTokenDesc": "This gift link is invalid or has expired.",
+    "days": "days",
+    "tariff": "Tariff",
+    "period": "Period",
+    "giftMessageLabel": "Message",
+    "recipientLabel": "Recipient",
+    "featureDisabled": "Gift feature is temporarily unavailable",
+    "redirecting": "Redirecting...",
+    "pending": {
+      "title": "You received a gift!",
+      "from": "from {{sender}}",
+      "activate": "Activate"
+    },
+    "warning": {
+      "telegram_unresolvable": "Could not verify this Telegram username. The recipient may not receive a notification about the gift."
+    },
+    "pageTitle": "Gifts",
+    "tabBuy": "Buy",
+    "tabActivate": "Activate",
+    "tabMyGifts": "My Gifts",
+    "selectTariff": "SELECT TARIFF",
+    "selectPeriod": "SUBSCRIPTION PERIOD",
+    "deviceCount": "{{count}} device",
+    "deviceCount_other": "{{count}} devices",
+    "activateTitle": "Enter gift code",
+    "activateDescription": "Enter the gift code you received from a friend",
+    "activateCodePlaceholder": "GIFT-XXXXXXXXXXXX",
+    "activateButton": "Activate gift",
+    "activating": "Activating...",
+    "activateSuccess": "Gift activated!",
+    "activateSuccessDesc": "{{tariff}} — {{days}} days added to your subscription",
+    "activateError": "Failed to activate gift",
+    "activateSelfError": "You cannot activate your own gift",
+    "myGiftsEmpty": "No gifts yet",
+    "myGiftsEmptyDesc": "Buy a gift for a friend or activate a received code",
+    "sentGiftsTitle": "Sent",
+    "activeGiftsTitle": "Active gifts",
+    "activatedGiftsTitle": "Activated",
+    "receivedGiftsTitle": "Received",
+    "statusAvailable": "AVAILABLE",
+    "statusActivated": "ACTIVATED",
+    "statusPending": "PENDING",
+    "statusDelivered": "DELIVERED",
+    "statusFailed": "FAILED",
+    "statusExpired": "EXPIRED",
+    "statusPendingActivation": "PENDING ACTIVATION",
+    "copyCode": "COPY",
+    "codeCopied": "Code copied!",
+    "shareGift": "SHARE",
+    "shareText": "I have a gift for you! Activate it here:",
+    "codeReadyTitle": "Gift code is ready!",
+    "codeLabel": "Gift code",
+    "sharePreview": "Message to share",
+    "activatedBy": "Activated by {{username}}",
+    "sentTo": "Sent to {{recipient}}",
+    "daysShort": "days",
+    "devicesShort": "dev.",
+    "gbShort": "GB",
+    "unlimitedTraffic": "Unlimited",
+    "shareModalActivateVia": "Activate via bot:",
+    "shareModalActivateViaCabinet": "Or via website:",
+    "copyMessage": "Copy message",
+    "shareToastCopied": "Message copied"
+  },
+  "news": {
+    "title": "News & Updates",
+    "filterAll": "All",
+    "readMore": "Read more",
+    "readTime": "min read",
+    "loadMore": "Load more",
+    "noNews": "No news yet",
+    "backToHome": "Back",
+    "views": "views",
+    "admin": {
+      "title": "News Management",
+      "create": "Create Article",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete this article?",
+      "published": "Published",
+      "draft": "Draft",
+      "featured": "Featured",
+      "titleLabel": "Title",
+      "slugLabel": "URL Slug",
+      "categoryLabel": "Category",
+      "categoryColorLabel": "Category Color",
+      "tagLabel": "Tag",
+      "excerptLabel": "Short Description",
+      "contentLabel": "Content",
+      "imageLabel": "Featured Image",
+      "readTimeLabel": "Read Time (min)",
+      "save": "Save",
+      "saving": "Saving...",
+      "saveError": "Failed to save article. Please try again.",
+      "saved": "Article saved",
+      "deleted": "Article deleted",
+      "selectColor": "Select color {{color}}",
+      "uploading": "Uploading...",
+      "dropMedia": "Drop image or video here",
+      "uploadError": "Upload failed",
+      "fileTooLarge": "File is too large",
+      "uploadFeaturedImage": "Upload image",
+      "combobox": {
+        "selectCategory": "Select category",
+        "selectTag": "Select tag",
+        "create": "Create",
+        "createNew": "Create new",
+        "searchOrCreate": "Search or create...",
+        "noItems": "Nothing found",
+        "placeholder": "Select...",
+        "clear": "Clear",
+        "delete": "Delete {{name}}"
+      },
+      "toolbar": {
+        "bold": "Bold",
+        "italic": "Italic",
+        "underline": "Underline",
+        "strikethrough": "Strikethrough",
+        "heading1": "Heading 1",
+        "heading2": "Heading 2",
+        "heading3": "Heading 3",
+        "bulletList": "Bullet List",
+        "orderedList": "Ordered List",
+        "blockquote": "Blockquote",
+        "codeBlock": "Code Block",
+        "alignLeft": "Align Left",
+        "alignCenter": "Align Center",
+        "highlight": "Highlight",
+        "link": "Link",
+        "image": "Image",
+        "imageUrlPrompt": "Image URL:",
+        "linkUrlPrompt": "URL:"
+      }
     }
   }
 }

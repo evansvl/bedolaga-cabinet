@@ -403,6 +403,7 @@ export default function Wheel() {
   };
 
   const handleUnifiedSpin = () => {
+    if (noSubscription) return;
     if (paymentType === 'telegram_stars') {
       if (!config?.spin_cost_stars_enabled || !config?.spin_cost_stars) {
         notify.warning(t('wheel.starsNotAvailable'));
@@ -424,7 +425,6 @@ export default function Wheel() {
       // Use the pending result from polling, or show a fallback
       if (pendingStarsResultRef.current) {
         setSpinResult(pendingStarsResultRef.current);
-        // Haptic feedback based on result
         if (pendingStarsResultRef.current.prize_type === 'nothing') {
           haptic.notification('warning');
         } else {
@@ -505,10 +505,12 @@ export default function Wheel() {
 
   // Stars via Telegram invoice don't require ruble balance, so only check daily limit
   const dailyLimitReached = config.daily_limit > 0 && config.user_spins_today >= config.daily_limit;
+  const noSubscription = !config.has_subscription;
   const spinDisabled =
     isSpinning ||
     isPayingStars ||
     dailyLimitReached ||
+    noSubscription ||
     (paymentType === 'telegram_stars' ? !starsEnabled : !config.can_spin);
 
   return (
@@ -543,7 +545,8 @@ export default function Wheel() {
             <div className="mt-8 space-y-4">
               {/* Payment type selector */}
               {(starsEnabled || daysEnabled) && (
-                <div className="rounded-xl border border-dark-700/30 bg-dark-800/30 p-1">
+                <div className="rounded-xl border border-dark-700/30 bg-dark-800/30 px-1 pb-1 pt-2">
+                  <p className="mb-1 text-center text-xs text-dark-400">{t('wheel.spinCost')}</p>
                   <div
                     className={`grid gap-1 ${bothMethodsAvailable ? 'grid-cols-2' : 'grid-cols-1'}`}
                   >
@@ -614,22 +617,34 @@ export default function Wheel() {
                 </Button>
               )}
 
+              {/* No subscription hint */}
+              {!isSpinning && noSubscription && (
+                <div className="rounded-linear border border-warning-500/30 bg-warning-500/5 p-4 text-center">
+                  <p className="text-warning-400">{t('wheel.errors.noSubscription')}</p>
+                </div>
+              )}
               {/* Cannot spin hint — only show for days payment (Stars via invoice always works) */}
-              {!isSpinning && paymentType !== 'telegram_stars' && !config.can_spin && (
-                <div className="rounded-linear border border-dark-700/30 bg-dark-800/30 p-4 text-center">
-                  <p className="text-dark-400">
-                    {config.can_spin_reason === 'daily_limit_reached'
-                      ? t('wheel.errors.dailyLimitReached')
-                      : t('wheel.errors.cannotSpin')}
-                  </p>
-                </div>
-              )}
+              {!isSpinning &&
+                !noSubscription &&
+                paymentType !== 'telegram_stars' &&
+                !config.can_spin && (
+                  <div className="rounded-linear border border-dark-700/30 bg-dark-800/30 p-4 text-center">
+                    <p className="text-dark-400">
+                      {config.can_spin_reason === 'daily_limit_reached'
+                        ? t('wheel.errors.dailyLimitReached')
+                        : t('wheel.errors.cannotSpin')}
+                    </p>
+                  </div>
+                )}
               {/* Daily limit hint for Stars payment (not covered by can_spin check) */}
-              {!isSpinning && paymentType === 'telegram_stars' && dailyLimitReached && (
-                <div className="rounded-linear border border-dark-700/30 bg-dark-800/30 p-4 text-center">
-                  <p className="text-dark-400">{t('wheel.errors.dailyLimitReached')}</p>
-                </div>
-              )}
+              {!isSpinning &&
+                !noSubscription &&
+                paymentType === 'telegram_stars' &&
+                dailyLimitReached && (
+                  <div className="rounded-linear border border-dark-700/30 bg-dark-800/30 p-4 text-center">
+                    <p className="text-dark-400">{t('wheel.errors.dailyLimitReached')}</p>
+                  </div>
+                )}
 
               {/* Inline Result Card */}
               {spinResult && !isSpinning && (

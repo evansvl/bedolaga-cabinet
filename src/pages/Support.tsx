@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -151,7 +151,7 @@ export default function Support() {
   log.debug('Component loaded');
 
   const { t } = useTranslation();
-  const { isAdmin } = useAuthStore();
+  const isAdmin = useAuthStore((state) => state.isAdmin);
   const queryClient = useQueryClient();
   const { openTelegramLink, openLink } = usePlatform();
   const [selectedTicket, setSelectedTicket] = useState<TicketDetail | null>(null);
@@ -166,6 +166,34 @@ export default function Support() {
   const [replyAttachment, setReplyAttachment] = useState<MediaAttachment | null>(null);
   const createFileInputRef = useRef<HTMLInputElement>(null);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
+  const createPreviewRef = useRef<string | null>(null);
+  const replyPreviewRef = useRef<string | null>(null);
+
+  // Revoke blob URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    const createRef = createPreviewRef;
+    const replyRef = replyPreviewRef;
+    return () => {
+      if (createRef.current) URL.revokeObjectURL(createRef.current);
+      if (replyRef.current) URL.revokeObjectURL(replyRef.current);
+    };
+  }, []);
+
+  const clearCreateAttachment = () => {
+    if (createPreviewRef.current) {
+      URL.revokeObjectURL(createPreviewRef.current);
+      createPreviewRef.current = null;
+    }
+    clearCreateAttachment();
+  };
+
+  const clearReplyAttachment = () => {
+    if (replyPreviewRef.current) {
+      URL.revokeObjectURL(replyPreviewRef.current);
+      replyPreviewRef.current = null;
+    }
+    clearReplyAttachment();
+  };
 
   // Get support configuration
   const { data: supportConfig, isLoading: configLoading } = useQuery({
@@ -213,8 +241,11 @@ export default function Support() {
       return;
     }
 
-    // Create preview
+    // Revoke old blob URL before creating new one
+    const previewRef = setAttachment === setCreateAttachment ? createPreviewRef : replyPreviewRef;
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
     const preview = URL.createObjectURL(file);
+    previewRef.current = preview;
     setAttachment({ file, preview, uploading: true });
 
     try {
@@ -250,7 +281,7 @@ export default function Support() {
       setShowCreateForm(false);
       setNewTitle('');
       setNewMessage('');
-      setCreateAttachment(null);
+      clearCreateAttachment();
       setSelectedTicket(ticket);
     },
   });
@@ -268,7 +299,7 @@ export default function Support() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', selectedTicket?.id] });
       setReplyMessage('');
-      setReplyAttachment(null);
+      clearReplyAttachment();
     },
   });
 
@@ -444,13 +475,53 @@ export default function Support() {
           onClick={() => {
             setShowCreateForm(true);
             setSelectedTicket(null);
-            setCreateAttachment(null);
+            clearCreateAttachment();
           }}
         >
           <PlusIcon />
           <span className="ml-2">{t('support.newTicket')}</span>
         </Button>
       </motion.div>
+
+      {/* Contact support card for "both" mode */}
+      {supportConfig?.support_type === 'both' && supportConfig.support_username && (
+        <motion.div variants={staggerItem}>
+          <Card className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800">
+                <svg
+                  className="h-5 w-5 text-dark-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-dark-100">{t('support.contactUs')}</div>
+                <div className="text-xs text-dark-400">{supportConfig.support_username}</div>
+              </div>
+            </div>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                const username = supportConfig.support_username!.startsWith('@')
+                  ? supportConfig.support_username!.slice(1)
+                  : supportConfig.support_username!;
+                openTelegramLink(`https://t.me/${username}`);
+              }}
+            >
+              {t('support.contactUs')}
+            </Button>
+          </Card>
+        </motion.div>
+      )}
 
       <motion.div variants={staggerItem} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Tickets List */}
@@ -469,7 +540,7 @@ export default function Support() {
                   onClick={() => {
                     setSelectedTicket(ticket as unknown as TicketDetail);
                     setShowCreateForm(false);
-                    setReplyAttachment(null);
+                    clearReplyAttachment();
                   }}
                   className={`w-full rounded-bento border p-4 text-left transition-all ${
                     selectedTicket?.id === ticket.id
@@ -574,7 +645,7 @@ export default function Support() {
                   {createAttachment ? (
                     <AttachmentPreview
                       attachment={createAttachment}
-                      onRemove={() => setCreateAttachment(null)}
+                      onRemove={() => clearCreateAttachment()}
                     />
                   ) : (
                     <button
@@ -608,7 +679,7 @@ export default function Support() {
                     variant="secondary"
                     onClick={() => {
                       setShowCreateForm(false);
-                      setCreateAttachment(null);
+                      clearCreateAttachment();
                     }}
                   >
                     {t('common.cancel')}
@@ -715,7 +786,7 @@ export default function Support() {
                         {replyAttachment ? (
                           <AttachmentPreview
                             attachment={replyAttachment}
-                            onRemove={() => setReplyAttachment(null)}
+                            onRemove={() => clearReplyAttachment()}
                           />
                         ) : (
                           <button

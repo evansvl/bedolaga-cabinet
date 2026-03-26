@@ -48,6 +48,12 @@ export interface BroadcastButtonsResponse {
   buttons: BroadcastButton[];
 }
 
+export interface CustomBroadcastButton {
+  label: string;
+  action_type: 'callback' | 'url';
+  action_value: string;
+}
+
 export interface BroadcastMedia {
   type: 'photo' | 'video' | 'document';
   file_id: string;
@@ -73,6 +79,7 @@ export interface CombinedBroadcastCreateRequest {
   // Telegram fields
   message_text?: string;
   selected_buttons?: string[];
+  custom_buttons?: CustomBroadcastButton[];
   media?: BroadcastMedia;
   // Email fields
   email_subject?: string;
@@ -90,6 +97,7 @@ export interface Broadcast {
   total_count: number;
   sent_count: number;
   failed_count: number;
+  blocked_count: number;
   status:
     | 'queued'
     | 'in_progress'
@@ -234,11 +242,7 @@ export const adminBroadcastsApi = {
     formData.append('file', file);
     formData.append('media_type', mediaType);
 
-    const response = await apiClient.post<MediaUploadResponse>('/cabinet/media/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await apiClient.post<MediaUploadResponse>('/cabinet/media/upload', formData);
     return response.data;
   },
 };

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { initDataUser } from '@telegram-apps/sdk-react';
 
 import { useAuthStore } from '@/store/auth';
+import { useShallow } from 'zustand/shallow';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlatform } from '@/platform';
 import {
@@ -34,6 +35,7 @@ import {
   InfoIcon,
   CogIcon,
   WheelIcon,
+  GiftIcon,
   MenuIcon,
   CloseIcon,
   SunIcon,
@@ -59,6 +61,7 @@ interface AppHeaderProps {
   referralEnabled?: boolean;
   hasContests?: boolean;
   hasPolls?: boolean;
+  giftEnabled?: boolean;
 }
 
 export function AppHeader({
@@ -74,10 +77,13 @@ export function AppHeader({
   referralEnabled,
   hasContests,
   hasPolls,
+  giftEnabled,
 }: AppHeaderProps) {
   const { t } = useTranslation();
   const location = useLocation();
-  const { user, logout, isAdmin } = useAuthStore();
+  const { user, logout, isAdmin } = useAuthStore(
+    useShallow((state) => ({ user: state.user, logout: state.logout, isAdmin: state.isAdmin })),
+  );
   const { toggleTheme, isDark } = useTheme();
   const { haptic, platform } = usePlatform();
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
@@ -161,6 +167,7 @@ export function AppHeader({
     ...(hasContests ? [{ path: '/contests', label: t('nav.contests'), icon: GamepadIcon }] : []),
     ...(hasPolls ? [{ path: '/polls', label: t('nav.polls'), icon: ClipboardIcon }] : []),
     ...(wheelEnabled ? [{ path: '/wheel', label: t('nav.wheel'), icon: WheelIcon }] : []),
+    ...(giftEnabled ? [{ path: '/gift', label: t('nav.gift'), icon: GiftIcon }] : []),
     { path: '/info', label: t('nav.info'), icon: InfoIcon },
   ];
 

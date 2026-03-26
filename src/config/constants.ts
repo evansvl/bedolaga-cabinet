@@ -1,4 +1,3 @@
-// Storage keys
 export const STORAGE_KEYS = {
   THEME: 'cabinet-theme',
   ENABLED_THEMES: 'cabinet-enabled-themes',
@@ -18,6 +17,8 @@ export const UI = {
   RESEND_COOLDOWN_SEC: 60,
   TELEGRAM_HEADER_ANDROID_PX: 48,
   TELEGRAM_HEADER_IOS_PX: 45,
+  MOBILE_HEADER_HEIGHT_PX: 64,
+  DESKTOP_HEADER_HEIGHT_PX: 56,
 } as const;
 
 // API

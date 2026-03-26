@@ -1,3 +1,5 @@
+import { useId } from 'react';
+
 interface PaymentMethodIconProps {
   method: string;
   className?: string;
@@ -7,6 +9,8 @@ export default function PaymentMethodIcon({
   method,
   className = 'h-8 w-8',
 }: PaymentMethodIconProps) {
+  const uid = useId();
+
   switch (method) {
     case 'telegram_stars':
       return (
@@ -115,6 +119,40 @@ export default function PaymentMethodIcon({
         </svg>
       );
 
+    case 'freekassa_sbp':
+      return (
+        <svg className={className} viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="20" fill="#00B894" />
+          <g fill="#fff" fontFamily="Arial,sans-serif" fontWeight="700">
+            <text x="20" y="20" textAnchor="middle" fontSize="9">
+              СБП
+            </text>
+            <text x="20" y="30" textAnchor="middle" fontSize="8" fontWeight="400">
+              QR
+            </text>
+          </g>
+        </svg>
+      );
+
+    case 'freekassa_card':
+      return (
+        <svg className={className} viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="20" fill="#6C5CE7" />
+          <rect
+            x="10"
+            y="14"
+            width="20"
+            height="14"
+            rx="2"
+            fill="none"
+            stroke="#fff"
+            strokeWidth="1.5"
+          />
+          <line x1="10" y1="19" x2="30" y2="19" stroke="#fff" strokeWidth="1.5" />
+          <rect x="13" y="22" width="5" height="2" rx="0.5" fill="#fff" opacity=".6" />
+        </svg>
+      );
+
     case 'cloudpayments':
       return (
         <svg className={className} viewBox="0 0 40 40">
@@ -137,16 +175,17 @@ export default function PaymentMethodIcon({
         </svg>
       );
 
-    case 'kassa_ai':
+    case 'kassa_ai': {
+      const kassaGradId = `${uid}-kassaAi`;
       return (
         <svg className={className} viewBox="0 0 40 40">
           <defs>
-            <linearGradient id="kassaAiGrad" x1="0" y1="0" x2="1" y2="1">
+            <linearGradient id={kassaGradId} x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#6366F1" />
               <stop offset="100%" stopColor="#8B5CF6" />
             </linearGradient>
           </defs>
-          <circle cx="20" cy="20" r="20" fill="url(#kassaAiGrad)" />
+          <circle cx="20" cy="20" r="20" fill={`url(#${kassaGradId})`} />
           <g fill="#fff" fontFamily="Arial,sans-serif" fontWeight="700">
             <text x="20" y="26" textAnchor="middle" fontSize="15">
               AI
@@ -154,6 +193,47 @@ export default function PaymentMethodIcon({
           </g>
         </svg>
       );
+    }
+
+    case 'riopay': {
+      const riopayGradId = `${uid}-riopay`;
+      return (
+        <svg className={className} viewBox="0 0 40 40">
+          <defs>
+            <linearGradient id={riopayGradId} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#10B981" />
+              <stop offset="100%" stopColor="#059669" />
+            </linearGradient>
+          </defs>
+          <circle cx="20" cy="20" r="20" fill={`url(#${riopayGradId})`} />
+          <g fill="#fff" fontFamily="Arial,sans-serif" fontWeight="700">
+            <text x="20" y="26" textAnchor="middle" fontSize="14">
+              RP
+            </text>
+          </g>
+        </svg>
+      );
+    }
+
+    case 'severpay': {
+      const severpayGradId = `${uid}-severpay`;
+      return (
+        <svg className={className} viewBox="0 0 40 40">
+          <defs>
+            <linearGradient id={severpayGradId} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#1e40af" />
+              <stop offset="100%" stopColor="#1d4ed8" />
+            </linearGradient>
+          </defs>
+          <circle cx="20" cy="20" r="20" fill={`url(#${severpayGradId})`} />
+          <g fill="#fff" fontFamily="Arial,sans-serif" fontWeight="700">
+            <text x="20" y="26" textAnchor="middle" fontSize="14">
+              SP
+            </text>
+          </g>
+        </svg>
+      );
+    }
 
     default:
       return (

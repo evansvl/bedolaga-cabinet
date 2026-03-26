@@ -80,8 +80,6 @@ const XCircleIcon = () => (
   </svg>
 );
 
-// ------- Main Component -------
-
 interface PromoOffersSectionProps {
   className?: string;
 }
@@ -116,6 +114,8 @@ export default function PromoOffersSection({ className = '' }: PromoOffersSectio
       queryClient.invalidateQueries({ queryKey: ['promo-offers'] });
       queryClient.invalidateQueries({ queryKey: ['active-discount'] });
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
+      queryClient.invalidateQueries({ queryKey: ['balance'] });
       setSuccessMessage(result.message);
       setClaimingId(null);
       setTimeout(() => setSuccessMessage(null), 5000);
@@ -156,7 +156,7 @@ export default function PromoOffersSection({ className = '' }: PromoOffersSectio
   };
 
   const handleUseNow = () => {
-    navigate('/subscription', { state: { scrollToExtend: true } });
+    navigate('/subscription/purchase');
   };
 
   const handleDeactivateClick = () => {

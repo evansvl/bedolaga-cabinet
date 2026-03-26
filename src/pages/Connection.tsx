@@ -14,7 +14,8 @@ import InstallationGuide from '../components/connection/InstallationGuide';
 export default function Connection() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user, isAdmin } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = useAuthStore((state) => state.isAdmin);
   const { isTelegramWebApp } = useTelegramSDK();
   const { impact: hapticImpact } = useHaptic();
 
@@ -33,6 +34,16 @@ export default function Connection() {
   const handleGoBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
+
+  const handleOpenQR = useCallback(() => {
+    navigate('/connection/qr', {
+      replace: !isTelegramWebApp,
+      state: {
+        url: appConfig?.subscriptionUrl,
+        hideLink: appConfig?.hideLink ?? false,
+      },
+    });
+  }, [navigate, appConfig?.subscriptionUrl, appConfig?.hideLink, isTelegramWebApp]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -87,7 +98,6 @@ export default function Connection() {
     );
   }, [appConfig?.platforms]);
 
-  // Loading
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center py-20">
@@ -96,20 +106,7 @@ export default function Connection() {
     );
   }
 
-  // Error
-  if (error || !appConfig) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-        <p className="mb-4 text-lg text-dark-300">{t('common.error')}</p>
-        <button onClick={handleGoBack} className="btn-primary px-6 py-2">
-          {t('common.close')}
-        </button>
-      </div>
-    );
-  }
-
-  // No apps configured — check before subscription since empty config also has no subscription
-  if (!hasApps) {
+  if (error || !appConfig || !hasApps) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-dark-800">
@@ -183,6 +180,7 @@ export default function Connection() {
       onOpenDeepLink={openDeepLink}
       isTelegramWebApp={isTelegramWebApp}
       onGoBack={handleGoBack}
+      onOpenQR={handleOpenQR}
     />
   );
 }

@@ -11,10 +11,8 @@ import { API } from '../config/constants';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
-// Настраиваем endpoint для refresh
 tokenRefreshManager.setRefreshEndpoint(`${API_BASE_URL}/cabinet/auth/refresh`);
 
-// CSRF token management
 const CSRF_COOKIE_NAME = 'csrf_token';
 const CSRF_HEADER_NAME = 'X-CSRF-Token';
 
@@ -34,7 +32,6 @@ function ensureCsrfToken(): string {
   let token = getCsrfToken();
   if (!token) {
     token = generateCsrfToken();
-    // Set cookie with SameSite=Strict for CSRF protection
     document.cookie = `${CSRF_COOKIE_NAME}=${token}; path=/; SameSite=Strict; Secure`;
   }
   return token;
@@ -49,9 +46,7 @@ const getTelegramInitData = (): string | null => {
       tokenStorage.setTelegramInitData(raw);
       return raw;
     }
-  } catch {
-    // Not in Telegram or SDK not initialized
-  }
+  } catch {}
 
   return tokenStorage.getTelegramInitData();
 };
@@ -64,42 +59,50 @@ export const apiClient = axios.create({
   },
 });
 
-// Auth endpoints that don't need Bearer token or token refresh
 const AUTH_ENDPOINTS = [
   '/cabinet/auth/telegram',
   '/cabinet/auth/telegram/widget',
   '/cabinet/auth/email/login',
-  '/cabinet/auth/email/register',
+  '/cabinet/auth/email/register/standalone',
   '/cabinet/auth/email/verify',
   '/cabinet/auth/refresh',
   '/cabinet/auth/password/forgot',
   '/cabinet/auth/password/reset',
   '/cabinet/auth/oauth/',
+  '/cabinet/auth/merge/',
+  '/cabinet/auth/account/link/server-complete',
+  '/cabinet/auth/deeplink/',
+  '/cabinet/auth/login/auto',
+  '/cabinet/landing/',
 ];
 
 function isAuthEndpoint(url: string | undefined): boolean {
   if (!url) return false;
-  return AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint));
+  return AUTH_ENDPOINTS.some((endpoint) => url.startsWith(endpoint));
 }
 
-// Request interceptor - add auth token with expiration check
 apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
-  // Skip token refresh and Bearer header for auth endpoints
-  // These endpoints authenticate via init_data/credentials, not Bearer tokens
+  // Let axios set the correct multipart/form-data header with boundary for FormData
+  if (config.data instanceof FormData && config.headers) {
+    delete config.headers['Content-Type'];
+  }
+
   if (!isAuthEndpoint(config.url)) {
     let token = tokenStorage.getAccessToken();
 
-    // Проверяем срок действия токена перед запросом
     if (token && isTokenExpired(token)) {
-      // Используем централизованный менеджер для refresh
       const newToken = await tokenRefreshManager.refreshAccessToken();
       if (newToken) {
         token = newToken;
       } else {
-        // Refresh не удался - редирект на логин
         tokenStorage.clearTokens();
         safeRedirectToLogin();
         return config;
+      }
+    } else if (!token && tokenStorage.getRefreshToken()) {
+      const newToken = await tokenRefreshManager.refreshAccessToken();
+      if (newToken) {
+        token = newToken;
       }
     }
 
@@ -108,12 +111,16 @@ apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =>
     }
   }
 
-  const telegramInitData = getTelegramInitData();
-  if (telegramInitData && config.headers) {
-    config.headers['X-Telegram-Init-Data'] = telegramInitData;
+  const isTelegramAuthEndpoint =
+    config.url?.startsWith('/cabinet/auth/telegram') ||
+    config.url?.startsWith('/cabinet/auth/account/link/telegram');
+  if (isTelegramAuthEndpoint) {
+    const telegramInitData = getTelegramInitData();
+    if (telegramInitData && config.headers) {
+      config.headers['X-Telegram-Init-Data'] = telegramInitData;
+    }
   }
 
-  // Add CSRF token for state-changing methods
   const method = config.method?.toUpperCase();
   if (method && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method) && config.headers) {
     config.headers[CSRF_HEADER_NAME] = ensureCsrfToken();
@@ -122,7 +129,6 @@ apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =>
   return config;
 });
 
-// Custom error types for special handling
 export interface MaintenanceError {
   code: 'maintenance';
   message: string;
@@ -133,6 +139,12 @@ export interface ChannelSubscriptionError {
   code: 'channel_subscription_required';
   message: string;
   channel_link?: string;
+  channels?: Array<{
+    channel_id: string;
+    channel_link?: string;
+    title?: string;
+    is_subscribed: boolean;
+  }>;
 }
 
 export interface BlacklistedError {
@@ -167,13 +179,11 @@ export function isBlacklistedError(
   return err.response?.status === 403 && err.response?.data?.detail?.code === 'blacklisted';
 }
 
-// Response interceptor - handle 401, 503 (maintenance), 403 (channel subscription)
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // Handle maintenance mode (503)
     if (isMaintenanceError(error)) {
       const detail = (error.response?.data as { detail: MaintenanceError }).detail;
       useBlockingStore.getState().setMaintenance({
@@ -183,17 +193,16 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle channel subscription required (403)
     if (isChannelSubscriptionError(error)) {
       const detail = (error.response?.data as { detail: ChannelSubscriptionError }).detail;
       useBlockingStore.getState().setChannelSubscription({
         message: detail.message,
         channel_link: detail.channel_link,
+        channels: detail.channels,
       });
       return Promise.reject(error);
     }
 
-    // Handle blacklisted user (403)
     if (isBlacklistedError(error)) {
       const detail = (error.response?.data as { detail: BlacklistedError }).detail;
       useBlockingStore.getState().setBlacklisted({
@@ -202,19 +211,10 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Если получили 401 и ещё не пробовали refresh (на случай если проверка exp не сработала)
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Не обрабатываем 401 для авторизационных endpoints - пусть ошибка дойдет до компонента
-      const authEndpoints = [
-        '/cabinet/auth/email/login',
-        '/cabinet/auth/telegram',
-        '/cabinet/auth/telegram/widget',
-      ];
       const requestUrl = originalRequest.url || '';
-      const isAuthEndpoint = authEndpoints.some((endpoint) => requestUrl.includes(endpoint));
 
-      if (isAuthEndpoint) {
-        // Пробрасываем ошибку в компонент для показа сообщения пользователю
+      if (isAuthEndpoint(requestUrl)) {
         return Promise.reject(error);
       }
 
@@ -227,7 +227,6 @@ apiClient.interceptors.response.use(
         }
         return apiClient(originalRequest);
       } else {
-        // Refresh не удался
         tokenStorage.clearTokens();
         safeRedirectToLogin();
       }
